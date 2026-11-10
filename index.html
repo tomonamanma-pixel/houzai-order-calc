@@ -224,7 +224,7 @@
       font-variant-numeric: tabular-nums;
     }
     .name-input { min-width: 12rem; width: 14rem; }
-    .code-input { min-width: 14rem; width: 18rem; }
+    .code-input { min-width: 8rem; width: 9rem; }
     .weekday-lg { font-size: 1.35rem; font-weight: 800; }
     .arrival {
       margin: 12px 0 0;
@@ -270,7 +270,7 @@
     }
     .share-hint {
       display: block;
-      max-width: 20rem;
+      max-width: 14rem;
       margin-top: 4px;
       color: var(--accent);
       font-size: 0.82rem;
@@ -360,9 +360,6 @@
     }
     .dialog-card p { font-size: 1.15rem; font-weight: 800; margin: 0 0 16px; }
     .dialog-actions .btn { flex: 1; }
-    .dialog-actions[hidden], .dialog-choices[hidden] { display: none !important; }
-    .dialog-choices { display: flex; flex-direction: column; gap: 10px; }
-    .dialog-choices .btn { width: 100%; min-height: 60px; font-size: 1.15rem; }
     #panel-calc { display: grid; gap: 14px; }
     #panel-calc > .card { margin-bottom: 0; }
     @media (max-width: 640px) {
@@ -385,11 +382,10 @@
       .card-stock .pending-item { flex-wrap: wrap; row-gap: 6px; }
       .card-meals .scroll-hint, .card-stock .scroll-hint { display: none; }
       table.master { min-width: 0; table-layout: fixed; }
-      table.master th:nth-child(1), table.master td:nth-child(1) { width: 26%; }
-      table.master th:nth-child(2), table.master td:nth-child(2) { width: 38%; }
-      table.master th:nth-child(3), table.master td:nth-child(3),
-      table.master th:nth-child(4), table.master td:nth-child(4) { width: 13%; }
-      table.master th:nth-child(5), table.master td:nth-child(5) { width: 10%; }
+      table.master th:nth-child(1), table.master td:nth-child(1) { width: 30%; }
+      table.master th:nth-child(4), table.master td:nth-child(4),
+      table.master th:nth-child(5), table.master td:nth-child(5) { width: 12%; }
+      table.master th:nth-child(6), table.master td:nth-child(6) { width: 11%; }
       .name-input, .code-input { width: 100%; min-width: 0; }
       table.master .num { width: 100%; }
       #panel-master .scroll-hint { display: none; }
@@ -492,7 +488,7 @@
       <section id="panel-master" class="panel" aria-label="メニュー・容器" hidden>
         <section class="card">
           <h2>メニュー・容器</h2>
-          <p class="hint">メニューを追加するときに分類を選びます。選んだ分類の見出しの下に並びます。同じ品番は自動で1つにまとまります。1ケースの枚数と予備在庫は、同じ品番のうち一番上の行を使います。品番が空のメニューは、それぞれ別になります。品番は、入力欄から離れると反映されます。蓋を別に注文するものは、「元気べんとう（蓋）」という名前でメニューを追加します。</p>
+          <p class="hint">同じ品番は自動で1つにまとまります。1ケースの枚数と予備在庫は、同じ品番のうち一番上の行を使います。品番が空のメニューは、それぞれ別になります。品番は、入力欄から離れると反映されます。蓋を別に注文するものは、「元気べんとう（蓋）」という名前でメニューを追加します。</p>
           <p class="scroll-hint">表は横にスライドできます。</p>
           <div id="master-root"></div>
           <div class="actions">
@@ -520,13 +516,7 @@
   <div id="dialog" class="dialog" hidden>
     <div class="dialog-card" role="dialog" aria-modal="true" aria-labelledby="dialog-text">
       <p id="dialog-text"></p>
-      <div class="dialog-choices" id="dialog-choices" hidden>
-        <button type="button" class="btn primary" data-pick-category="お弁当">お弁当</button>
-        <button type="button" class="btn primary" data-pick-category="丼">丼</button>
-        <button type="button" class="btn primary" data-pick-category="お重">お重</button>
-        <button type="button" class="btn" id="dialog-choice-cancel">キャンセル</button>
-      </div>
-      <div class="dialog-actions" id="dialog-actions">
+      <div class="dialog-actions">
         <button type="button" class="btn" id="dialog-cancel">キャンセル</button>
         <button type="button" class="btn primary" id="dialog-ok">OK</button>
       </div>
@@ -1093,15 +1083,20 @@
           return;
         }
         var html = '<div class="table-scroll"><table class="master"><thead><tr>' +
-          '<th class="sticky">メニュー名</th><th>品番</th><th>1ケースの枚数</th><th>予備在庫（枚）</th><th></th></tr></thead><tbody>';
+          '<th class="sticky">メニュー名</th><th>分類</th><th>品番</th><th>1ケースの枚数</th><th>予備在庫（枚）</th><th></th></tr></thead><tbody>';
         var last = "";
         menusInOrder().forEach(function (menu) {
           if (menu.category !== last) {
             last = menu.category;
-            html += '<tr class="cat-row ' + CAT_CLASS[menu.category] + '"><th colspan="5">' + esc(menu.category) + "</th></tr>";
+            html += '<tr class="cat-row ' + CAT_CLASS[menu.category] + '"><th colspan="6">' + esc(menu.category) + "</th></tr>";
           }
           html += '<tr><td class="sticky"><input class="name-input" type="text" autocomplete="off" spellcheck="false" data-name-input="' +
             esc(menu.id) + '" value="' + esc(menu.name) + '" aria-label="メニュー名"></td>';
+          html += '<td><select data-cat-input="' + esc(menu.id) + '" aria-label="分類">';
+          CATEGORIES.forEach(function (cat) {
+            html += '<option value="' + esc(cat) + '"' + (menu.category === cat ? " selected" : "") + ">" + esc(cat) + "</option>";
+          });
+          html += "</select></td>";
           html += '<td><input class="code-input" type="text" autocomplete="off" spellcheck="false" data-code-input="' +
             esc(menu.id) + '" value="' + esc(menu.code) + '" aria-label="品番"><span class="share-hint" data-share="' + esc(menu.id) + '"></span></td>';
           html += '<td><input class="num" inputmode="numeric" autocomplete="off" data-per-input="' + esc(menu.id) + '" value="' +
@@ -1151,11 +1146,6 @@
         document.getElementById("tab-master").setAttribute("aria-selected", calc ? "false" : "true");
       }
 
-      function setDialogMode(mode) {
-        document.getElementById("dialog-actions").hidden = mode !== "confirm";
-        document.getElementById("dialog-choices").hidden = mode !== "category";
-      }
-
       function ask(message, okLabel, tone) {
         var root = document.getElementById("dialog");
         var ok = document.getElementById("dialog-ok");
@@ -1163,7 +1153,6 @@
         document.getElementById("dialog-text").textContent = message;
         ok.textContent = okLabel || "OK";
         ok.className = "btn " + (tone === "danger" ? "danger" : "primary");
-        setDialogMode("confirm");
         root.hidden = false;
         document.body.style.overflow = "hidden";
         cancel.focus();
@@ -1179,24 +1168,6 @@
 
       function closeDialog(value) {
         if (dialogResolver) dialogResolver(value);
-      }
-
-      function pickCategory() {
-        var root = document.getElementById("dialog");
-        document.getElementById("dialog-text").textContent = "追加するメニューの分類を選んでください。";
-        setDialogMode("category");
-        root.hidden = false;
-        document.body.style.overflow = "hidden";
-        var first = document.querySelector("[data-pick-category]");
-        if (first) first.focus();
-        return new Promise(function (resolve) {
-          dialogResolver = function (value) {
-            dialogResolver = null;
-            root.hidden = true;
-            document.body.style.overflow = "";
-            resolve(value);
-          };
-        });
       }
 
       function ensureContainer(key) {
@@ -1317,6 +1288,23 @@
           else updateDerived();
           return;
         }
+        var catId = t.getAttribute("data-cat-input");
+        if (catId) {
+          var catMenu = findMenu(catId);
+          if (!catMenu) return;
+          if (CATEGORIES.indexOf(t.value) === -1) return;
+          catMenu.category = t.value;
+          save();
+          renderMeals();
+          renderMaster();
+          refreshContainers();
+          var again = document.querySelector("[data-cat-input]");
+          document.querySelectorAll("[data-cat-input]").forEach(function (el) {
+            if (el.getAttribute("data-cat-input") === catId) again = el;
+          });
+          if (again) again.focus();
+          return;
+        }
         var arrivalKey = t.getAttribute("data-arrival-for");
         if (arrivalKey) {
           var rec = state.containers[arrivalKey];
@@ -1335,20 +1323,14 @@
       }
 
       function addMenu() {
-        pickCategory().then(function (category) {
-          if (CATEGORIES.indexOf(category) === -1) return;
-          var menu = blankMenu("", category);
-          state.menus.push(menu);
-          save();
-          renderMeals();
-          renderMaster();
-          refreshContainers();
-          document.querySelectorAll("[data-name-input]").forEach(function (el) {
-            if (el.getAttribute("data-name-input") === menu.id) {
-              el.focus();
-              if (el.scrollIntoView) el.scrollIntoView({ block: "center" });
-            }
-          });
+        var menu = blankMenu("", "お弁当");
+        state.menus.push(menu);
+        save();
+        renderMeals();
+        renderMaster();
+        refreshContainers();
+        document.querySelectorAll("[data-name-input]").forEach(function (el) {
+          if (el.getAttribute("data-name-input") === menu.id) el.focus();
         });
       }
 
@@ -1486,8 +1468,7 @@
         else if (t.id === "confirm-order") confirmOrder();
         else if (t.id === "add-holiday") addHoliday();
         else if (t.id === "dialog-ok") closeDialog(true);
-        else if (t.id === "dialog-cancel" || t.id === "dialog-choice-cancel") closeDialog(false);
-        else if (t.hasAttribute("data-pick-category")) closeDialog(t.getAttribute("data-pick-category"));
+        else if (t.id === "dialog-cancel") closeDialog(false);
         else if (t.hasAttribute("data-delete-menu")) deleteMenu(t.getAttribute("data-delete-menu"));
         else if (t.hasAttribute("data-remove-pending")) removePending(t.getAttribute("data-pending-key"), t.getAttribute("data-remove-pending"));
         else if (t.hasAttribute("data-remove-holiday")) removeHoliday(t.getAttribute("data-remove-holiday"));
