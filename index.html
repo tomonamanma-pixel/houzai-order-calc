@@ -9,93 +9,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="包材発注計算">
   <title>包材発注計算</title>
-  <script>
-    try {
-      var savedTheme = localStorage.getItem("houzai-order-calc-theme");
-      if (savedTheme === "light" || savedTheme === "dark") {
-        document.documentElement.setAttribute("data-theme", savedTheme);
-      }
-    } catch (e) {}
-  </script>
   <style>
     :root {
-      color-scheme: light;
-      --bg: #f6f5f2;
-      --card: #ffffff;
-      --text: #1a1a1a;
-      --muted: #5c534c;
-      --line: #ddd9d0;
-      --line-strong: #b9b2a6;
-      --accent: #1f5c45;
-      --accent-text: #ffffff;
-      --hot-bg: #fff1e4;
-      --hot-text: #9a3412;
-      --hot-border: #ea580c;
-      --hot-num: #c2410c;
-      --danger: #9f1239;
-      --danger-bg: #fff1f2;
-      --input: #ffffff;
-      --shadow: 0 1px 2px rgba(28, 25, 23, 0.06);
-      --status-bg: #e7f3ee;
-      --focus: #1f5c45;
-      --cat-bento: #e5f0e2;
-      --cat-don: #fff3e0;
-      --cat-ju: #f3e8ff;
-      --hint: #5c534c;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme="light"]) {
-        color-scheme: dark;
-        --bg: #1c1917;
-        --card: #292524;
-        --text: #fafaf9;
-        --muted: #d6d3d1;
-        --line: #44403c;
-        --line-strong: #78716c;
-        --accent: #2dd4bf;
-        --accent-text: #042f2e;
-        --hot-bg: #7c2d12;
-        --hot-text: #ffedd5;
-        --hot-border: #fb923c;
-        --hot-num: #ffedd5;
-        --danger: #fecdd3;
-        --danger-bg: #4c0519;
-        --input: #1c1917;
-        --shadow: none;
-        --status-bg: #134e4a;
-        --focus: #5eead4;
-        --cat-bento: #1a3a2a;
-        --cat-don: #3f2e14;
-        --cat-ju: #342848;
-        --hint: #d6d3d1;
-      }
-    }
-    :root[data-theme="dark"] {
-      color-scheme: dark;
-      --bg: #1c1917;
-      --card: #292524;
-      --text: #fafaf9;
-      --muted: #d6d3d1;
-      --line: #44403c;
-      --line-strong: #78716c;
-      --accent: #2dd4bf;
-      --accent-text: #042f2e;
-      --hot-bg: #7c2d12;
-      --hot-text: #ffedd5;
-      --hot-border: #fb923c;
-      --hot-num: #ffedd5;
-      --danger: #fecdd3;
-      --danger-bg: #4c0519;
-      --input: #1c1917;
-      --shadow: none;
-      --status-bg: #134e4a;
-      --focus: #5eead4;
-      --cat-bento: #1a3a2a;
-      --cat-don: #3f2e14;
-      --cat-ju: #342848;
-      --hint: #d6d3d1;
-    }
-    :root[data-theme="light"] {
       color-scheme: light;
       --bg: #f6f5f2;
       --card: #ffffff;
@@ -438,7 +353,6 @@
           <h1>包材発注計算</h1>
           <p class="lead">食数と今ある枚数を入れると、アスピットに入力するケース数がわかります。</p>
         </div>
-        <button type="button" class="btn ghost" id="theme-toggle">暗くする</button>
       </div>
       </header>
     <div class="tabs" role="tablist">
@@ -526,7 +440,6 @@
   <script>
     (function () {
       var STORAGE_KEY = "houzai-order-calc-v1";
-      var THEME_KEY = "houzai-order-calc-theme";
       var CATEGORIES = ["お弁当", "丼", "お重"];
       var DAYS = ["月", "火", "水", "木", "金", "土"];
       var WEEK = ["日", "月", "火", "水", "木", "金", "土"];
@@ -1495,35 +1408,11 @@
         updateDerived();
       }
 
-      function currentIsDark() {
-        var mode = document.documentElement.getAttribute("data-theme");
-        if (mode === "dark") return true;
-        if (mode === "light") return false;
-        return window.matchMedia("(prefers-color-scheme: dark)").matches;
-      }
-
-      function updateThemeButton() {
-        var dark = currentIsDark();
-        var btn = document.getElementById("theme-toggle");
-        btn.textContent = dark ? "明るくする" : "暗くする";
-        btn.setAttribute("aria-pressed", dark ? "true" : "false");
-        var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute("content", dark ? "#1c1917" : "#1f5c45");
-      }
-
-      function toggleTheme() {
-        var next = currentIsDark() ? "light" : "dark";
-        document.documentElement.setAttribute("data-theme", next);
-        try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
-        updateThemeButton();
-      }
-
       function onClick(e) {
         var t = e.target.closest("button");
         if (!t) return;
         if (t.id === "tab-calc") showTab("calc");
         else if (t.id === "tab-master") showTab("master");
-        else if (t.id === "theme-toggle") toggleTheme();
         else if (t.id === "add-menu") addMenu();
         else if (t.id === "reset-all") resetAll();
         else if (t.id === "confirm-order") confirmOrder();
@@ -1559,13 +1448,8 @@
       state = readState();
       if (!state.orderDate || state.orderDate < todayISO()) state.orderDate = todayISO();
       prunePending();
-      updateThemeButton();
       renderAll();
       saveNow();
-
-      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () {
-        if (!document.documentElement.getAttribute("data-theme")) updateThemeButton();
-      });
     })();
   </script>
 </body>
