@@ -532,20 +532,47 @@
       var WEEK = ["日", "月", "火", "水", "木", "金", "土"];
       var CAT_CLASS = { "お弁当": "cat-bento", "丼": "cat-don", "お重": "cat-ju" };
       var SAMPLE = [
-        ["お弁当", "元気べんとう"],
-        ["お弁当", "焼魚弁当"],
-        ["お弁当", "まごわやさしい弁当"],
-        ["お弁当", "ごはん日和"],
-        ["お弁当", "唐揚げ弁当"],
-        ["お弁当", "バランス小鉢"],
-        ["お弁当", "明太重"],
-        ["丼", "野菜たっぷり鶏そぼろ丼"],
-        ["丼", "ビビンバ丼"],
-        ["丼", "中華飯"],
-        ["丼", "マーボー丼"],
-        ["丼", "シャケ明太のせのせ丼"],
-        ["お重", "牛めし重"],
-        ["お重", "たま玉重"]
+        ["お弁当", "元気べんとう", "ＣＹ－２－２　黒セット", 50, 50],
+        ["お弁当", "まごわやさしい弁当", "ＷＵ－４０５Ｓ－４８　本体　わっぱ", 15, 15],
+        ["丼", "オムライス", "フルレンジ　ＴＲ－１６０Ｈ　黒", 50, 50],
+        ["お重", "牛めし重", "ＷＵ－３０２－４４　本体　白河", 15, 15],
+        ["お弁当", "まごわやさしい弁当（蓋）", "ＷＵ－４０５Ｈ　嵌合蓋（Ｖ）ＯＰＳ", 15, 15],
+        ["お弁当", "焼魚弁当", "ＭＦＰアリオン２３－１７－１赤フチ黒Ｎ", 50, 50],
+        ["お弁当", "焼魚弁当（蓋）", "Ｔ－アリオン２３－１７嵌合蓋エコＯＰ", 50, 50],
+        ["お弁当", "ごはん日和", "巧膳１９－１６－１Ｈ　華やぎ赤", 50, 50],
+        ["お弁当", "ごはん日和（蓋）", "巧膳１９－１６Ｆ", 50, 50],
+        ["お弁当", "シャケ明太子のせのせ弁当", "バイオデリカ枠重４－１Ｂ　Ｋ－いちとせ朱", 50, 50],
+        ["お弁当", "シャケ明太子のせのせ弁当（蓋）", "バイオデリカ枠重４　ＯＣ", 50, 50],
+        ["お弁当", "カキフライ弁当（本体）", "響膳１０Ｂ　ソワレレッド", 50, 50],
+        ["お弁当", "カキフライ弁当（中皿）", "響膳　中皿１　ひかり", 50, 50],
+        ["お弁当", "カキフライ弁当（蓋）", "響膳１０－ＯＣＨ", 50, 50],
+        ["お弁当", "神のエビフライ弁当", "ＭＦＰエリッシュ２２－２０－１　エンジ", 50, 50],
+        ["お弁当", "神のエビフライ弁当（蓋）", "Ｔエリッシュ２２－２０嵌合高蓋ＯＰＳ　Ｈ", 50, 50],
+        ["お弁当", "チキン南蛮弁当", "ＭＦＰエリッシュ２２－２０－１　エンジ", 50, 50],
+        ["お弁当", "チキン南蛮弁当（蓋）", "Ｔエリッシュ２２－２０嵌合高蓋ＯＰＳ　Ｈ", 50, 50],
+        ["お弁当", "唐揚げ弁当", "響膳１０Ｂ　ソワレレッド", 50, 50],
+        ["お弁当", "唐揚げ弁当（中皿）", "響膳　中皿１　ひかり", 50, 50],
+        ["お弁当", "唐揚げ弁当（蓋）", "響膳１０－ＯＣＨ", 50, 50],
+        ["お弁当", "うれしい海苔弁", "ＭＦＰ－角重１８－１３　赤拓木", 50, 50],
+        ["お弁当", "うれしい海苔弁（蓋）", "Ｔ－角重１８－１３ 嵌合蓋R（OPET)", 50, 50],
+        ["お弁当", "ハンバーグ弁当", "ＭＦＰエリッシュ２２－２０－１　エンジ", 50, 50],
+        ["お弁当", "ハンバーグ弁当（蓋）", "Ｔエリッシュ２２－２０嵌合高蓋ＯＰＳ　Ｈ", 50, 50],
+        ["丼", "オムライス（蓋）", "ＴＲ－１６０Ｆ蓋", 50, 50],
+        ["丼", "焼肉ライス", "ＣＴグルメハウス　Ｍ２１　ＢＫ　身", 50, 50],
+        ["丼", "焼肉ライス（蓋）", "ＣＴグルメハウス　Ｍ２１　蓋", 50, 50],
+        ["丼", "マーボー丼", "ＫＭＰ丼１７０　本体　ブラック", 25, 25],
+        ["丼", "マーボー丼（蓋）", "どんぶり１７０　フタ（９００）", 25, 25],
+        ["丼", "野菜たっぷり鶏そぼろ丼", "ＫＭ１６５－９００　本体　ナチュラル", 50, 50],
+        ["丼", "野菜たっぷり鶏そぼろ丼（蓋）", "ＫＭ１６５（ＯＰＳ）　フタ", 50, 50],
+        ["丼", "中華飯", "ＫＭＰ丼１７０　本体　ブラック", 25, 25],
+        ["丼", "中華飯（蓋）", "どんぶり１７０　フタ（９００）", 25, 25],
+        ["丼", "ビビンバ丼", "ＫＭＰ丼１７０　本体　ブラック", 25, 25],
+        ["丼", "ビビンバ丼（蓋）", "どんぶり１７０　フタ（９００）", 25, 25],
+        ["丼", "親子丼", "ＲＫ－１４２－８５０　クラフト", 50, 50],
+        ["丼", "親子丼（中皿）", "ＲＫ－１４２中皿－１　ＰＰＮＴ", 50, 50],
+        ["丼", "親子丼（蓋）", "Ｔ－ＲＫ－１４２中皿内嵌合蓋　ＰＰ", 50, 50],
+        ["お重", "牛めし重（蓋）", "ＷＵ－３０２嵌合高蓋　Ｈ", 15, 15],
+        ["お重", "たま玉重", "ＷＵ－３０２－４４　本体　白河", 15, 0]
       ];
 
       var state;
@@ -651,21 +678,21 @@
         });
       }
 
-      function blankMenu(name, category) {
+      function blankMenu(name, category, code, perCase, reserve) {
         return {
           id: uid("m"),
           name: name || "",
           category: category || "お弁当",
-          code: "",
-          perCase: 50,
-          reserve: 0,
+          code: code || "",
+          perCase: perCase == null ? 50 : toInt(perCase),
+          reserve: reserve == null ? 0 : toInt(reserve),
           counts: [0, 0, 0, 0, 0, 0]
         };
       }
 
       function sampleMenus() {
         return SAMPLE.map(function (row) {
-          return blankMenu(row[1], row[0]);
+          return blankMenu(row[1], row[0], row[2], row[3], row[4]);
         });
       }
 
@@ -728,11 +755,45 @@
         };
       }
 
+      var STARTER_NAMES = [
+        "元気べんとう", "焼魚弁当", "まごわやさしい弁当", "ごはん日和", "唐揚げ弁当", "バランス小鉢", "明太重",
+        "野菜たっぷり鶏そぼろ丼", "ビビンバ丼", "中華飯", "マーボー丼", "シャケ明太のせのせ丼",
+        "牛めし重", "たま玉重"
+      ];
+
+      function isUntouchedStarter(menus) {
+        if (!menus || menus.length !== STARTER_NAMES.length) return false;
+        var names = menus.map(function (menu) { return trimName(menu.name); }).sort();
+        var expected = STARTER_NAMES.slice().sort();
+        for (var i = 0; i < expected.length; i++) {
+          if (names[i] !== expected[i]) return false;
+        }
+        return menus.every(function (menu) { return !trimCode(menu.code); });
+      }
+
+      function applySavedCatalog(previous) {
+        var countsByName = {};
+        previous.forEach(function (menu) {
+          countsByName[trimName(menu.name)] = menu.counts.slice();
+        });
+        var menus = sampleMenus();
+        menus.forEach(function (menu) {
+          var counts = countsByName[trimName(menu.name)];
+          if (counts) menu.counts = counts.slice();
+        });
+        return menus;
+      }
+
       function readState() {
         try {
           var raw = localStorage.getItem(STORAGE_KEY);
           if (!raw) return defaultState();
-          return sanitizeState(JSON.parse(raw)) || defaultState();
+          var next = sanitizeState(JSON.parse(raw)) || defaultState();
+          if (isUntouchedStarter(next.menus)) {
+            next.menus = applySavedCatalog(next.menus);
+            next.containers = {};
+          }
+          return next;
         } catch (e) {
           canStore = false;
           return defaultState();
@@ -1350,7 +1411,7 @@
       }
 
       function resetAll() {
-        ask("メニュー、食数、在庫、入荷待ち、配達休みを、最初のサンプルに戻します。よろしいですか？", "初期状態に戻す", "danger").then(function (ok) {
+        ask("食数、在庫、入荷待ち、配達休みを消して、メニューと品番は登録済みの内容に戻します。よろしいですか？", "初期状態に戻す", "danger").then(function (ok) {
           if (!ok) return;
           state = defaultState();
           saveNow();
