@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="theme-color" content="#1f5c45">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="包材発注">
+  <title>包材発注</title>
+  <script>
+    try {
+      var savedTheme = localStorage.getItem("houzai-order-calc-theme");
+      if (savedTheme === "light" || savedTheme === "dark") {
+        document.documentElement.setAttribute("data-theme", savedTheme);
+      }
+    } catch (e) {}
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f5f2;
+      --card: #ffffff;
+      --text: #1a1a1a;
+      --muted: #5c534c;
+      --line: #ddd9d0;
+      --line-strong: #b9b2a6;
+      --accent: #1f5c45;
+      --accent-text: #ffffff;
+      --hot-bg: #fff1e4;
+      --hot-text: #9a3412;
+      --hot-border: #ea580c;
+      --hot-num: #c2410c;
+      --danger: #9f1239;
+      --danger-bg: #fff1f2;
+      --input: #ffffff;
+      --shadow: 0 1px 2px rgba(28, 25, 23, 0.06);
+      --status-bg: #e7f3ee;
+      --focus: #1f5c45;
+      --cat-bento: #e5f0e2;
+      --cat-don: #fff3e0;
+      --cat-ju: #f3e8ff;
+      --hint: #5c534c;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --bg: #1c1917;
+        --card: #292524;
+        --text: #fafaf9;
+        --muted: #d6d3d1;
+        --line: #44403c;
+        --line-strong: #78716c;
+        --accent: #2dd4bf;
+        --accent-text: #042f2e;
+        --hot-bg: #7c2d12;
+        --hot-text: #ffedd5;
+        --hot-border: #fb923c;
+        --hot-num: #ffedd5;
+        --danger: #fecdd3;
+        --danger-bg: #4c0519;
+        --input: #1c1917;
+        --shadow: none;
+        --status-bg: #134e4a;
+        --focus: #5eead4;
+        --cat-bento: #1a3a2a;
+        --cat-don: #3f2e14;
+        --cat-ju: #342848;
+        --hint: #d6d3d1;
+      }
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #1c1917;
+      --card: #292524;
+      --text: #fafaf9;
+      --muted: #d6d3d1;
+      --line: #44403c;
+      --line-strong: #78716c;
+      --accent: #2dd4bf;
+      --accent-text: #042f2e;
+      --hot-bg: #7c2d12;
+      --hot-text: #ffedd5;
+      --hot-border: #fb923c;
+      --hot-num: #ffedd5;
+      --danger: #fecdd3;
+      --danger-bg: #4c0519;
+      --input: #1c1917;
+      --shadow: none;
+      --status-bg: #134e4a;
+      --focus: #5eead4;
+      --cat-bento: #1a3a2a;
+      --cat-don: #3f2e14;
+      --cat-ju: #342848;
+      --hint: #d6d3d1;
+    }
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f6f5f2;
+      --card: #ffffff;
+      --text: #1a1a1a;
+      --muted: #5c534c;
+      --line: #ddd9d0;
+      --line-strong: #b9b2a6;
+      --accent: #1f5c45;
+      --accent-text: #ffffff;
+      --hot-bg: #fff1e4;
+      --hot-text: #9a3412;
+      --hot-border: #ea580c;
+      --hot-num: #c2410c;
+      --danger: #9f1239;
+      --danger-bg: #fff1f2;
+      --input: #ffffff;
+      --shadow: 0 1px 2px rgba(28, 25, 23, 0.06);
+      --status-bg: #e7f3ee;
+      --focus: #1f5c45;
+      --cat-bento: #e5f0e2;
+      --cat-don: #fff3e0;
+      --cat-ju: #f3e8ff;
+      --hint: #5c534c;
+    }
+    * { box-sizing: border-box; }
+    html { font-size: 18px; -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Segoe UI", "Yu Gothic UI", Meiryo, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    button, input, select { font: inherit; color: inherit; touch-action: manipulation; }
+    button { cursor: pointer; }
+    button:disabled, input:disabled, select:disabled { opacity: 0.45; cursor: not-allowed; }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: calc(12px + env(safe-area-inset-top)) 16px calc(48px + env(safe-area-inset-bottom));
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+    }
+    .top { padding-top: 8px; }
+    .top-row { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    h1 { font-size: 1.7rem; line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.28rem; line-height: 1.3; margin: 0 0 8px; }
+    .lead, .hint, .save-note { color: var(--hint); margin: 4px 0 0; }
+    .hint { font-size: 0.95rem; margin-bottom: 10px; }
+    .scroll-hint { color: var(--muted); font-size: 0.9rem; margin: 0 0 8px; }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      position: sticky;
+      top: env(safe-area-inset-top, 0px);
+      z-index: 30;
+      background: var(--bg);
+      margin: 12px 0;
+      padding: 8px 0 10px;
+    }
+    .tab, .btn, .icon-btn {
+      border: 2px solid var(--line-strong);
+      background: var(--card);
+      border-radius: 14px;
+      min-height: 52px;
+      padding: 10px 16px;
+      font-weight: 700;
+    }
+    .tab { flex: 1; font-size: 1.05rem; }
+    .tab[aria-selected="true"] {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-text);
+    }
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-text);
+    }
+    .btn.danger {
+      background: var(--danger-bg);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+    .btn.ghost { background: transparent; }
+    .btn.xl { width: 100%; font-size: 1.08rem; min-height: 60px; margin-top: 8px; }
+    .icon-btn {
+      min-width: 52px;
+      padding: 8px 12px;
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+    input:focus, select:focus, button:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-bottom: 14px;
+      min-width: 0;
+    }
+    .date-row, .holiday-add, .actions, .with-unit, .pending-item, .order-card, .dialog-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .date-row, .holiday-add, .actions, .pending-item, .dialog-actions { flex-wrap: wrap; }
+    .field { display: flex; flex-direction: column; gap: 6px; font-weight: 700; }
+    input, select {
+      background: var(--input);
+      border: 2px solid var(--line-strong);
+      border-radius: 12px;
+      min-height: 52px;
+      padding: 8px 12px;
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+    input[type="date"] { min-width: 11.5rem; }
+    .num {
+      width: 5.2rem;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .name-input { min-width: 12rem; width: 14rem; }
+    .code-input { min-width: 14rem; width: 18rem; }
+    .weekday-lg { font-size: 1.35rem; font-weight: 800; }
+    .arrival {
+      margin: 12px 0 0;
+      padding: 14px;
+      border-radius: 14px;
+      background: var(--status-bg);
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+    .table-scroll { overflow-x: auto; overflow-y: clip; -webkit-overflow-scrolling: touch; }
+    table { border-collapse: separate; border-spacing: 0; width: 100%; }
+    table.meals { min-width: 680px; }
+    table.stock { min-width: 860px; }
+    table.master { min-width: 920px; }
+    .lid-note { color: var(--muted); font-weight: 700; text-align: left; white-space: nowrap; }
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+      background: var(--card);
+    }
+    th {
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 800;
+      white-space: nowrap;
+      text-align: left;
+    }
+    .sticky { position: sticky; left: 0; z-index: 3; }
+    .sticky-end { position: sticky; right: 0; z-index: 3; box-shadow: -1px 0 0 var(--line); }
+    thead .sticky, thead .sticky-end { z-index: 4; }
+    .name-cell { min-width: 9.5rem; max-width: 16rem; white-space: normal; font-weight: 800; }
+    .cat-row th { font-size: 1.05rem; color: var(--text); padding: 10px 12px; }
+    .cat-bento th { background: var(--cat-bento); }
+    .cat-don th { background: var(--cat-don); }
+    .cat-ju th { background: var(--cat-ju); }
+    .total-cell, .usage-cell {
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      white-space: nowrap;
+      min-width: 4.8rem;
+    }
+    .share-hint {
+      display: block;
+      max-width: 20rem;
+      margin-top: 4px;
+      color: var(--accent);
+      font-size: 0.82rem;
+      font-weight: 800;
+      white-space: normal;
+    }
+    .share-hint:empty { display: none; }
+    .is-empty { color: var(--muted); font-weight: 700; }
+    .pending-list { min-width: 18rem; }
+    .pending-item { flex-wrap: nowrap; margin-bottom: 8px; }
+    .pending-item .field { flex-direction: row; align-items: center; gap: 6px; white-space: nowrap; }
+    table.stock th, table.stock td { white-space: nowrap; }
+    .pending-item:last-child { margin-bottom: 0; }
+    .cases-label { font-weight: 800; white-space: nowrap; }
+    .pencil { font-weight: 800; color: var(--hot-num); }
+    .summary { font-size: 1.2rem; font-weight: 800; margin: 0 0 12px; }
+    .order-list { display: flex; flex-direction: column; gap: 10px; }
+    .order-card {
+      justify-content: space-between;
+      align-items: stretch;
+      border: 2px solid var(--line);
+      border-radius: 16px;
+      padding: 12px 14px;
+      background: var(--card);
+      transition: background-color 0.15s, border-color 0.15s;
+    }
+    .order-card.hot {
+      background: var(--hot-bg);
+      border-color: var(--hot-border);
+      color: var(--hot-text);
+    }
+    .order-name { font-weight: 800; font-size: 1.08rem; margin: 0; }
+    .order-meta, .breakdown, .formula { color: var(--muted); margin: 4px 0 0; }
+    .order-card.hot .order-meta,
+    .order-card.hot .breakdown { color: inherit; }
+    .order-qty { text-align: right; min-width: 7.5rem; align-self: center; }
+    .order-num {
+      display: block;
+      font-size: 2.6rem;
+      line-height: 1;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: var(--muted);
+    }
+    .order-card.hot .order-num { color: var(--hot-num); }
+    .order-unit { font-weight: 800; }
+    .warn { color: var(--danger); font-weight: 800; margin: 6px 0 0; }
+    .order-card.hot .warn { color: inherit; }
+    .formula { font-size: 0.92rem; }
+    .status {
+      min-height: 1.4em;
+      font-weight: 800;
+      margin: 8px 0 0;
+    }
+    .status:empty { display: none; }
+    .holiday-list { list-style: none; padding: 0; margin: 12px 0 0; }
+    .holiday-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--line);
+      font-weight: 800;
+    }
+    .empty-note { color: var(--muted); margin: 8px 0; }
+    .save-note { font-size: 0.9rem; padding-bottom: 12px; }
+    .dialog {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .dialog[hidden] { display: none !important; }
+    .panel[hidden] { display: none !important; }
+    .dialog-card {
+      width: min(100%, 28rem);
+      background: var(--card);
+      color: var(--text);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+    }
+    .dialog-card p { font-size: 1.15rem; font-weight: 800; margin: 0 0 16px; }
+    .dialog-actions .btn { flex: 1; }
+    .dialog-actions[hidden], .dialog-choices[hidden] { display: none !important; }
+    .dialog-choices { display: flex; flex-direction: column; gap: 10px; }
+    .dialog-choices .btn { width: 100%; min-height: 60px; font-size: 1.15rem; }
+    #panel-calc { display: grid; gap: 14px; }
+    #panel-calc > .card { margin-bottom: 0; }
+    @media (max-width: 640px) {
+      html { font-size: 17px; }
+      .order-card { flex-direction: column; }
+      .order-qty { text-align: left; align-self: flex-start; }
+      .order-num { font-size: 2.8rem; }
+    }
+    @media (min-width: 700px) {
+      .wrap { max-width: 1320px; padding-left: max(22px, env(safe-area-inset-left)); padding-right: max(22px, env(safe-area-inset-right)); }
+      .tab { min-height: 56px; font-size: 1.12rem; }
+      table.meals { min-width: 0; table-layout: fixed; }
+      table.meals .name-cell { width: 24%; max-width: none; }
+      table.meals .total-cell { width: 4.4rem; }
+      table.meals .num { width: 100%; max-width: 6.5rem; }
+      table.stock { min-width: 0; table-layout: fixed; }
+      table.stock .name-cell { width: 24%; max-width: none; white-space: normal; }
+      table.stock .pending-list { min-width: 0; }
+      .card-stock input[type="date"] { min-width: 0; width: 100%; max-width: 9.2rem; }
+      .card-stock .pending-item { flex-wrap: wrap; row-gap: 6px; }
+      .card-meals .scroll-hint, .card-stock .scroll-hint { display: none; }
+      table.master { min-width: 0; table-layout: fixed; }
+      table.master th:nth-child(1), table.master td:nth-child(1) { width: 26%; }
+      table.master th:nth-child(2), table.master td:nth-child(2) { width: 38%; }
+      table.master th:nth-child(3), table.master td:nth-child(3),
+      table.master th:nth-child(4), table.master td:nth-child(4) { width: 13%; }
+      table.master th:nth-child(5), table.master td:nth-child(5) { width: 10%; }
+      .name-input, .code-input { width: 100%; min-width: 0; }
+      table.master .num { width: 100%; }
+      #panel-master .scroll-hint { display: none; }
+    }
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .order-list { display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; }
+    }
+    @media (min-width: 1024px) {
+      #panel-calc {
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+        align-items: start;
+      }
+      .card-date { grid-column: 1; grid-row: 1; }
+      .card-meals { grid-column: 1; grid-row: 2; }
+      .card-stock { grid-column: 1; grid-row: 3; }
+      .card-order {
+        grid-column: 2;
+        grid-row: 1 / span 3;
+        align-self: start;
+        position: sticky;
+        top: calc(84px + env(safe-area-inset-top, 0px));
+        max-height: calc(100dvh - 100px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      table.stock .name-cell { width: 26%; }
+      .card-order .order-list {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+      }
+      .card-order .order-num { font-size: 2.15rem; }
+      .card-order .order-qty { min-width: 5.6rem; }
+      .card-order .breakdown { font-size: 0.86rem; }
+      .scroll-hint { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .order-card { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="top-row">
+        <div>
+          <h1>包材発注</h1>
+          <p class="lead">食数と今ある枚数を入れると、アスピットに入力するケース数がわかります。</p>
+        </div>
+        <button type="button" class="btn ghost" id="theme-toggle">暗くする</button>
+      </div>
+      </header>
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab" id="tab-calc" role="tab" aria-controls="panel-calc" aria-selected="true">発注計算</button>
+      <button type="button" class="tab" id="tab-master" role="tab" aria-controls="panel-master" aria-selected="false">メニュー・容器</button>
+    </div>
+
+    <main>
+      <section id="panel-calc" class="panel" aria-label="発注計算">
+        <section class="card card-date">
+          <h2>1. 発注日</h2>
+          <div class="date-row">
+            <label class="field" for="order-date">発注日
+              <input type="date" id="order-date">
+            </label>
+            <span id="order-weekday" class="weekday-lg"></span>
+          </div>
+          <p class="arrival" id="arrival-text" aria-live="polite"></p>
+          <p class="hint">入荷は発注日の2日後です。木曜・日曜と、「メニュー・容器」で登録した配達休みは、次の日にずれます。</p>
+        </section>
+
+        <section class="card card-meals">
+          <h2>2. 来週のメニュー食数（日別）</h2>
+          <p class="hint">月〜土の食数を入れてください。1食につき、容器を1枚使います。「元気べんとう（蓋）」のように登録したメニューは、元気べんとうと同じ食数になります。右端は6日分の合計です。</p>
+          <p class="scroll-hint">表は横にスライドできます。</p>
+          <div id="meals-root"></div>
+        </section>
+
+        <section class="card card-stock">
+          <h2>3. 現在庫（バラの枚数）</h2>
+          <p class="hint">今、棚にある枚数を入れてください。入荷待ちは、発注済みでまだ届いていない分です。発注日までに届く分は表示から消えるので、その枚数は次に数える現在庫へ入れてください。</p>
+          <p class="scroll-hint">表は横にスライドできます。</p>
+          <div id="stock-root"></div>
+        </section>
+
+        <section class="card card-order">
+          <h2>4. アスピットに入力する数（ケース）</h2>
+          <p class="summary" id="order-summary"></p>
+          <div class="order-list" id="order-list"></div>
+          <p class="formula">足りない枚数 = 使用予定 + 予備在庫 − 現在庫 − 入荷待ちの枚数。それを1ケースの枚数で割って、端数は切り上げます。</p>
+          <button type="button" class="btn primary xl" id="confirm-order">発注を確定（入荷待ちとして記録）</button>
+          <p class="hint">確定すると、0より大きいケース数を入荷待ちに足します。足した分は差し引かれるので、発注ケース数は0に戻ります。</p>
+          <p class="status" id="order-status" aria-live="polite"></p>
+        </section>
+      </section>
+
+      <section id="panel-master" class="panel" aria-label="メニュー・容器" hidden>
+        <section class="card">
+          <h2>メニュー・容器</h2>
+          <p class="hint">メニューを追加するときに分類を選びます。選んだ分類の見出しの下に並びます。同じ品番は自動で1つにまとまります。1ケースの枚数と予備在庫は、同じ品番のうち一番上の行を使います。品番が空のメニューは、それぞれ別になります。品番は、入力欄から離れると反映されます。蓋を別に注文するものは、「元気べんとう（蓋）」という名前でメニューを追加します。</p>
+          <p class="scroll-hint">表は横にスライドできます。</p>
+          <div id="master-root"></div>
+          <div class="actions">
+            <button type="button" class="btn primary" id="add-menu">＋ メニューを追加</button>
+            <button type="button" class="btn danger" id="reset-all">初期状態に戻す</button>
+          </div>
+        </section>
+        <section class="card">
+          <h2>配達休みの日</h2>
+          <p class="hint">選んだ日は入荷しません。木曜と日曜は、ここへ入れなくても休みです。</p>
+          <div class="holiday-add">
+            <label class="field" for="holiday-date">日付
+              <input type="date" id="holiday-date">
+            </label>
+            <button type="button" class="btn primary" id="add-holiday">追加</button>
+          </div>
+          <p class="status" id="holiday-msg" aria-live="polite"></p>
+          <ul class="holiday-list" id="holiday-list"></ul>
+        </section>
+      </section>
+      <p class="save-note" id="save-note"></p>
+    </main>
+  </div>
+
+  <div id="dialog" class="dialog" hidden>
+    <div class="dialog-card" role="dialog" aria-modal="true" aria-labelledby="dialog-text">
+      <p id="dialog-text"></p>
+      <div class="dialog-choices" id="dialog-choices" hidden>
+        <button type="button" class="btn primary" data-pick-category="お弁当">お弁当</button>
+        <button type="button" class="btn primary" data-pick-category="丼">丼</button>
+        <button type="button" class="btn primary" data-pick-category="お重">お重</button>
+        <button type="button" class="btn" id="dialog-choice-cancel">キャンセル</button>
+      </div>
+      <div class="dialog-actions" id="dialog-actions">
+        <button type="button" class="btn" id="dialog-cancel">キャンセル</button>
+        <button type="button" class="btn primary" id="dialog-ok">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var STORAGE_KEY = "houzai-order-calc-v1";
+      var THEME_KEY = "houzai-order-calc-theme";
+      var CATEGORIES = ["お弁当", "丼", "お重"];
+      var DAYS = ["月", "火", "水", "木", "金", "土"];
+      var WEEK = ["日", "月", "火", "水", "木", "金", "土"];
+      var CAT_CLASS = { "お弁当": "cat-bento", "丼": "cat-don", "お重": "cat-ju" };
+      var SAMPLE = [
+        ["お弁当", "元気べんとう"],
+        ["お弁当", "焼魚弁当"],
+        ["お弁当", "まごわやさしい弁当"],
+        ["お弁当", "ごはん日和"],
+        ["お弁当", "唐揚げ弁当"],
+        ["お弁当", "バランス小鉢"],
+        ["お弁当", "明太重"],
+        ["丼", "野菜たっぷり鶏そぼろ丼"],
+        ["丼", "ビビンバ丼"],
+        ["丼", "中華飯"],
+        ["丼", "マーボー丼"],
+        ["丼", "シャケ明太のせのせ丼"],
+        ["お重", "牛めし重"],
+        ["お重", "たま玉重"]
+      ];
+
+      var state;
+      var saveTimer = 0;
+      var canStore = true;
+      var dialogResolver = null;
+
+      function uid(prefix) {
+        return prefix + "_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+      }
+
+      function esc(value) {
+        return String(value).replace(/[&<>"']/g, function (ch) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
+        });
+      }
+
+      function pad(n) { return n < 10 ? "0" + n : String(n); }
+
+      function todayISO() {
+        var d = new Date();
+        return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+      }
+
+      function isISO(value) {
+        return /^\d{4}-\d{2}-\d{2}$/.test(value || "");
+      }
+
+      function parseISO(iso) {
+        var p = iso.split("-");
+        return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+      }
+
+      function toISO(date) {
+        return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate());
+      }
+
+      function addDays(iso, n) {
+        var d = parseISO(iso);
+        d.setDate(d.getDate() + n);
+        return toISO(d);
+      }
+
+      function weekdayChar(iso) {
+        if (!isISO(iso)) return "";
+        return WEEK[parseISO(iso).getDay()];
+      }
+
+      function formatMD(iso) {
+        var d = parseISO(iso);
+        return (d.getMonth() + 1) + "/" + d.getDate() + "(" + weekdayChar(iso) + ")";
+      }
+
+      function toInt(value) {
+        var s = String(value == null ? "" : value);
+        s = s.replace(/[０-９]/g, function (ch) {
+          return String.fromCharCode(ch.charCodeAt(0) - 0xfee0);
+        });
+        s = s.replace(/[^\d]/g, "");
+        if (!s) return 0;
+        var n = parseInt(s, 10);
+        if (!isFinite(n) || n < 0) return 0;
+        if (n > 1000000) return 1000000;
+        return n;
+      }
+
+      function trimCode(value) {
+        return String(value == null ? "" : value).replace(/^[\s\u3000]+|[\s\u3000]+$/g, "");
+      }
+
+      function normalizeCode(value) {
+        var s = String(value == null ? "" : value).replace(/\u3000/g, " ");
+        s = s.replace(/[！-～]/g, function (ch) {
+          return String.fromCharCode(ch.charCodeAt(0) - 0xfee0);
+        });
+        return s.trim().toLowerCase();
+      }
+
+      function containerKey(menu, code) {
+        var raw = code === undefined ? menu.code : code;
+        var n = normalizeCode(raw);
+        return n ? "code:" + n : "id:" + menu.id;
+      }
+
+      function menuLabel(menu) {
+        return trimName(menu.name) || "（名前なし）";
+      }
+
+      function trimName(value) {
+        return String(value == null ? "" : value).replace(/^[\s\u3000]+|[\s\u3000]+$/g, "");
+      }
+
+      function lidBaseName(name) {
+        var match = trimName(name).match(/^(.+?)[（(]\s*蓋\s*[）)]$/);
+        return match ? trimName(match[1]) : "";
+      }
+
+      function linkedBases(menu) {
+        var base = lidBaseName(menu.name);
+        if (!base) return [];
+        return state.menus.filter(function (other) {
+          return other.id !== menu.id && !lidBaseName(other.name) && trimName(other.name) === base;
+        });
+      }
+
+      function blankMenu(name, category) {
+        return {
+          id: uid("m"),
+          name: name || "",
+          category: category || "お弁当",
+          code: "",
+          perCase: 50,
+          reserve: 0,
+          counts: [0, 0, 0, 0, 0, 0]
+        };
+      }
+
+      function sampleMenus() {
+        return SAMPLE.map(function (row) {
+          return blankMenu(row[1], row[0]);
+        });
+      }
+
+      function defaultState() {
+        return { orderDate: todayISO(), menus: sampleMenus(), containers: {}, holidays: [] };
+      }
+
+      function sanitizePending(item) {
+        if (!item || typeof item !== "object") return null;
+        if (!isISO(item.orderDate)) return null;
+        var cases = toInt(item.cases);
+        if (cases <= 0) return null;
+        return {
+          id: typeof item.id === "string" && item.id ? item.id : uid("p"),
+          cases: cases,
+          orderDate: item.orderDate,
+          manualArrival: isISO(item.manualArrival) ? item.manualArrival : null
+        };
+      }
+
+      function sanitizeState(data) {
+        if (!data || typeof data !== "object" || !Array.isArray(data.menus)) return null;
+        var seen = {};
+        var menus = data.menus.map(function (menu) {
+          var counts = Array.isArray(menu && menu.counts) ? menu.counts : [];
+          var id = menu && typeof menu.id === "string" && menu.id ? menu.id : uid("m");
+          if (seen[id]) id = uid("m");
+          seen[id] = true;
+          return {
+            id: id,
+            name: menu && typeof menu.name === "string" ? menu.name : "",
+            category: menu && CATEGORIES.indexOf(menu.category) !== -1 ? menu.category : "お弁当",
+            code: menu && typeof menu.code === "string" ? menu.code : "",
+            perCase: !menu || menu.perCase == null || menu.perCase === "" ? 50 : toInt(menu.perCase),
+            reserve: !menu || menu.reserve == null || menu.reserve === "" ? 0 : toInt(menu.reserve),
+            counts: [0, 1, 2, 3, 4, 5].map(function (i) { return toInt(counts[i]); })
+          };
+        });
+        var containers = {};
+        var rawContainers = data.containers && typeof data.containers === "object" ? data.containers : {};
+        Object.keys(rawContainers).forEach(function (key) {
+          if (key.indexOf("lid:") === 0) return;
+          var rec = rawContainers[key];
+          if (!rec || typeof rec !== "object") return;
+          var pending = Array.isArray(rec.pending) ? rec.pending.map(sanitizePending).filter(Boolean) : [];
+          containers[key] = { stock: toInt(rec.stock), pending: pending };
+        });
+        var holidays = [];
+        if (Array.isArray(data.holidays)) {
+          data.holidays.forEach(function (day) {
+            if (isISO(day) && holidays.indexOf(day) === -1) holidays.push(day);
+          });
+        }
+        holidays.sort();
+        return {
+          orderDate: isISO(data.orderDate) ? data.orderDate : todayISO(),
+          menus: menus,
+          containers: containers,
+          holidays: holidays
+        };
+      }
+
+      function readState() {
+        try {
+          var raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return defaultState();
+          return sanitizeState(JSON.parse(raw)) || defaultState();
+        } catch (e) {
+          canStore = false;
+          return defaultState();
+        }
+      }
+
+      function saveNow() {
+        clearTimeout(saveTimer);
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          canStore = true;
+        } catch (e) {
+          canStore = false;
+        }
+        var note = document.getElementById("save-note");
+        if (note) {
+          note.textContent = canStore
+            ? "入力内容はこの端末に保存されます。"
+            : "この端末には保存できません。画面を閉じると入力は消えます。";
+        }
+      }
+
+      function save() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(saveNow, 80);
+      }
+
+      function menusInOrder() {
+        var out = [];
+        CATEGORIES.forEach(function (cat) {
+          state.menus.forEach(function (menu) {
+            if (menu.category === cat) out.push(menu);
+          });
+        });
+        return out;
+      }
+
+      function ownUsage(menu) {
+        return menu.counts.reduce(function (sum, n) { return sum + toInt(n); }, 0);
+      }
+
+      function menuUsage(menu) {
+        var bases = linkedBases(menu);
+        if (!bases.length) return ownUsage(menu);
+        return bases.reduce(function (sum, item) { return sum + ownUsage(item); }, 0);
+      }
+
+      function autoArrival(orderDate) {
+        if (!isISO(orderDate)) return "";
+        var iso = addDays(orderDate, 2);
+        var holidays = {};
+        state.holidays.forEach(function (day) { holidays[day] = true; });
+        for (var i = 0; i < 60; i++) {
+          var day = parseISO(iso).getDay();
+          if (day !== 0 && day !== 4 && !holidays[iso]) return iso;
+          iso = addDays(iso, 1);
+        }
+        return iso;
+      }
+
+      function normalizeManual(item) {
+        var auto = autoArrival(item.orderDate);
+        if (item.manualArrival && item.manualArrival === auto) item.manualArrival = null;
+      }
+
+      function effectiveArrival(item) {
+        var auto = autoArrival(item.orderDate);
+        if (item.manualArrival && item.manualArrival !== auto) return item.manualArrival;
+        return auto;
+      }
+
+      function prunePending() {
+        var changed = false;
+        Object.keys(state.containers).forEach(function (key) {
+          var rec = state.containers[key];
+          if (!rec || !Array.isArray(rec.pending)) return;
+          var before = JSON.stringify(rec.pending);
+          rec.pending.forEach(normalizeManual);
+          rec.pending = rec.pending.filter(function (item) {
+            return effectiveArrival(item) > state.orderDate;
+          });
+          if (JSON.stringify(rec.pending) !== before) changed = true;
+        });
+        return changed;
+      }
+
+      function usesOf(key) {
+        var uses = [];
+        menusInOrder().forEach(function (menu) {
+          if (containerKey(menu) === key) uses.push(menu.id);
+        });
+        return uses;
+      }
+
+      function getGroups() {
+        var map = new Map();
+        menusInOrder().forEach(function (menu) {
+          var key = containerKey(menu);
+          if (!map.has(key)) map.set(key, []);
+          map.get(key).push(menu);
+        });
+        var groups = [];
+        map.forEach(function (menus, key) {
+          var top = menus[0];
+          var rec = state.containers[key] || { stock: 0, pending: [] };
+          var pending = (rec.pending || []).filter(function (item) {
+            return toInt(item.cases) > 0 && effectiveArrival(item) > state.orderDate;
+          }).slice().sort(function (a, b) {
+            var aa = effectiveArrival(a);
+            var bb = effectiveArrival(b);
+            if (aa < bb) return -1;
+            if (aa > bb) return 1;
+            return a.id < b.id ? -1 : 1;
+          });
+          var pendingCases = pending.reduce(function (sum, item) { return sum + toInt(item.cases); }, 0);
+          var usage = 0;
+          menus.forEach(function (menu) {
+            var bases = linkedBases(menu);
+            if (bases.length && bases.some(function (base) { return containerKey(base) === key; })) return;
+            usage += menuUsage(menu);
+          });
+          var perCase = toInt(top.perCase);
+          var reserve = toInt(top.reserve);
+          var stock = toInt(rec.stock);
+          var incoming = pendingCases * perCase;
+          var need = usage + reserve - stock - incoming;
+          var cases = 0;
+          if (need > 0 && perCase > 0) cases = Math.ceil(need / perCase);
+          groups.push({
+            key: key,
+            menus: menus,
+            top: top,
+            name: menus.map(menuLabel).join("・"),
+            code: trimCode(top.code),
+            perCase: perCase,
+            reserve: reserve,
+            stock: stock,
+            usage: usage,
+            pending: pending,
+            pendingCases: pendingCases,
+            incoming: incoming,
+            cases: cases,
+            need: need
+          });
+        });
+        return groups;
+      }
+
+      function findMenu(id) {
+        for (var i = 0; i < state.menus.length; i++) {
+          if (state.menus[i].id === id) return state.menus[i];
+        }
+        return null;
+      }
+
+      function binds() {
+        var map = {};
+        document.querySelectorAll("[data-bind]").forEach(function (el) {
+          var key = el.getAttribute("data-k");
+          var kind = el.getAttribute("data-bind");
+          if (!map[key]) map[key] = {};
+          if (!map[key][kind]) map[key][kind] = [];
+          map[key][kind].push(el);
+        });
+        return map;
+      }
+
+      function setBind(map, key, kind, text) {
+        var list = map[key] && map[key][kind];
+        if (!list) return;
+        list.forEach(function (el) { el.textContent = text; });
+      }
+
+      function updateDerived() {
+        var weekday = document.getElementById("order-weekday");
+        if (weekday) weekday.textContent = state.orderDate ? "（" + weekdayChar(state.orderDate) + "）" : "";
+        var arrival = document.getElementById("arrival-text");
+        var arrivalISO = autoArrival(state.orderDate);
+        if (arrival) {
+          arrival.textContent = arrivalISO
+            ? "今回の発注は " + formatMD(arrivalISO) + " に入荷します"
+            : "発注日を入力してください";
+        }
+
+        state.menus.forEach(function (menu) {
+          document.querySelectorAll("[data-sum]").forEach(function (el) {
+            if (el.getAttribute("data-sum") === menu.id) el.textContent = String(menuUsage(menu));
+          });
+          document.querySelectorAll("[data-menu-label]").forEach(function (el) {
+            if (el.getAttribute("data-menu-label") === menu.id) {
+              el.textContent = (menu.name || "").trim() || "（名前なし）";
+            }
+          });
+          document.querySelectorAll("[data-count-for]").forEach(function (el) {
+            if (el.getAttribute("data-count-for") !== menu.id) return;
+            var day = DAYS[Number(el.getAttribute("data-day"))];
+            el.setAttribute("aria-label", ((menu.name || "").trim() || "メニュー") + "の" + day + "の食数");
+          });
+        });
+
+        var groups = getGroups();
+        var ordering = groups.filter(function (g) { return g.cases > 0; }).length;
+        var summary = document.getElementById("order-summary");
+        if (summary) summary.textContent = "今回発注するもの: " + ordering + " / " + groups.length + " 種類";
+        var map = binds();
+        groups.forEach(function (g) {
+          setBind(map, g.key, "name", g.name);
+          var codeText = g.code || "未設定";
+          var codeEls = map[g.key] && map[g.key].code;
+          if (codeEls) {
+            codeEls.forEach(function (el) {
+              el.textContent = codeText;
+              el.classList.toggle("is-empty", !g.code);
+            });
+          }
+          setBind(map, g.key, "usage", g.usage + "枚");
+          setBind(map, g.key, "per", String(g.perCase));
+          setBind(map, g.key, "cases", String(g.cases));
+          setBind(map, g.key, "break", "使用予定 " + g.usage + "枚 ＋ 予備 " + g.reserve + "枚 − 在庫 " + g.stock + "枚 − 入荷待ち " + g.incoming + "枚");
+          var cards = map[g.key] && map[g.key].card;
+          if (cards) cards.forEach(function (el) { el.classList.toggle("hot", g.cases > 0); });
+          var warns = map[g.key] && map[g.key].warn;
+          if (warns) {
+            warns.forEach(function (el) {
+              var show = g.perCase < 1 && g.need > 0;
+              el.hidden = !show;
+            });
+          }
+          document.querySelectorAll("[data-stock-for]").forEach(function (el) {
+            if (el.getAttribute("data-stock-for") === g.key) {
+              el.setAttribute("aria-label", g.name + "の現在庫");
+            }
+          });
+        });
+        updateMasterHints(groups);
+      }
+
+      function shareText(menu) {
+        if (!normalizeCode(menu.code)) return "";
+        var uses = usesOf(containerKey(menu));
+        if (uses.length < 2) return "";
+        if (uses[0] === menu.id) return "同じ品番 " + uses.length + "件の代表。この行の枚数と予備を使います";
+        return "同じ品番です。枚数と予備は代表の行を使います";
+      }
+
+      function updateMasterHints() {
+        document.querySelectorAll("[data-share]").forEach(function (el) {
+          var menu = findMenu(el.getAttribute("data-share"));
+          el.textContent = menu ? shareText(menu) : "";
+        });
+      }
+
+      function renderMeals() {
+        var root = document.getElementById("meals-root");
+        if (!state.menus.length) {
+          root.innerHTML = '<p class="empty-note">メニューがありません。「メニュー・容器」から追加してください。</p>';
+          return;
+        }
+        var html = '<div class="table-scroll"><table class="meals"><thead><tr>' +
+          '<th class="sticky">メニュー</th>';
+        DAYS.forEach(function (day) { html += "<th>" + day + "</th>"; });
+        html += '<th class="sticky-end">合計</th></tr></thead><tbody>';
+        var last = "";
+        menusInOrder().forEach(function (menu) {
+          if (menu.category !== last) {
+            last = menu.category;
+            html += '<tr class="cat-row ' + CAT_CLASS[menu.category] + '"><th colspan="8">' + esc(menu.category) + "</th></tr>";
+          }
+          html += "<tr><th class=\"sticky name-cell\" scope=\"row\" data-menu-label=\"" + esc(menu.id) + "\">" +
+            esc(menuLabel(menu)) + "</th>";
+          var bases = linkedBases(menu);
+          if (bases.length) {
+            html += '<td class="lid-note" colspan="6">' + esc(lidBaseName(menu.name)) + "と同じ食数</td>";
+          } else {
+            menu.counts.forEach(function (count, index) {
+              html += '<td><input class="num" inputmode="numeric" autocomplete="off" data-count-for="' + esc(menu.id) +
+                '" data-day="' + index + '" value="' + toInt(count) + '" aria-label="' +
+                esc((trimName(menu.name) || "メニュー") + "の" + DAYS[index] + "の食数") + '"></td>';
+            });
+          }
+          html += '<td class="total-cell sticky-end" data-sum="' + esc(menu.id) + '">' + menuUsage(menu) + "</td></tr>";
+        });
+        html += "</tbody></table></div>";
+        root.innerHTML = html;
+      }
+
+      function renderStock() {
+        var root = document.getElementById("stock-root");
+        var groups = getGroups();
+        if (!groups.length) {
+          root.innerHTML = '<p class="empty-note">容器がありません。</p>';
+          return;
+        }
+        var html = '<div class="table-scroll"><table class="stock"><thead><tr>' +
+          '<th class="sticky">品目</th><th>現在庫</th><th>使用予定</th><th>品番</th><th>入荷待ち</th></tr></thead><tbody>';
+        groups.forEach(function (g) {
+          html += '<tr><th class="sticky name-cell" scope="row" data-bind="name" data-k="' + esc(g.key) + '">' + esc(g.name) + "</th>";
+          html += '<td><div class="with-unit"><input class="num" inputmode="numeric" autocomplete="off" data-stock-for="' +
+            esc(g.key) + '" value="' + g.stock + '" aria-label="' + esc(g.name + "の現在庫") + '"><span>枚</span></div></td>';
+          html += '<td class="usage-cell" data-bind="usage" data-k="' + esc(g.key) + '">' + g.usage + "枚</td>";
+          html += '<td data-bind="code" data-k="' + esc(g.key) + '"' + (g.code ? "" : ' class="is-empty"') + ">" + esc(g.code || "未設定") + "</td>";
+          html += '<td><div class="pending-list">';
+          if (!g.pending.length) {
+            html += '<span class="is-empty">なし</span>';
+          } else {
+            g.pending.forEach(function (item) {
+              var arrival = effectiveArrival(item);
+              var manual = !!(item.manualArrival && item.manualArrival !== autoArrival(item.orderDate));
+              html += '<div class="pending-item"><span class="cases-label">' + toInt(item.cases) + "ケース</span>";
+              html += '<label class="field">入荷日<input type="date" data-arrival-for="' + esc(g.key) + '" data-pending-id="' +
+                esc(item.id) + '" value="' + esc(arrival) + '" title="自動の入荷日は ' + esc(formatMD(autoArrival(item.orderDate))) +
+                ' です。同じ日に戻すと、変更を解除します"></label>';
+              html += '<span class="weekday-lg">' + esc(weekdayChar(arrival)) + "</span>";
+              if (manual) html += '<span class="pencil" title="手で変更しています">✎</span>';
+              html += '<button type="button" class="icon-btn" data-remove-pending="' + esc(item.id) + '" data-pending-key="' +
+                esc(g.key) + '" aria-label="入荷待ちを取り消す">✕</button></div>';
+            });
+          }
+          html += "</div></td></tr>";
+        });
+        html += "</tbody></table></div>";
+        root.innerHTML = html;
+      }
+
+      function renderOrder() {
+        var root = document.getElementById("order-list");
+        var groups = getGroups();
+        if (!groups.length) {
+          root.innerHTML = '<p class="empty-note">容器がありません。</p>';
+          return;
+        }
+        root.innerHTML = groups.map(function (g) {
+          return '<article class="order-card' + (g.cases > 0 ? " hot" : "") + '" data-bind="card" data-k="' + esc(g.key) + '">' +
+            '<div><p class="order-name" data-bind="name" data-k="' + esc(g.key) + '">' + esc(g.name) + "</p>" +
+            '<p class="order-meta">品番 <strong data-bind="code" data-k="' + esc(g.key) + '"' + (g.code ? "" : ' class="is-empty"') + ">" +
+            esc(g.code || "未設定") + "</strong>　1ケース <strong data-bind=\"per\" data-k=\"" + esc(g.key) + "\">" + g.perCase + "</strong>枚</p>" +
+            '<p class="breakdown" data-bind="break" data-k="' + esc(g.key) + '"></p>' +
+            '<p class="warn" data-bind="warn" data-k="' + esc(g.key) + '" hidden>1ケースの枚数を1以上にしてください</p></div>' +
+            '<div class="order-qty"><span class="order-num" data-bind="cases" data-k="' + esc(g.key) + '">' + g.cases +
+            '</span><span class="order-unit">ケース</span></div></article>';
+        }).join("");
+      }
+
+      function renderMaster() {
+        var root = document.getElementById("master-root");
+        if (!state.menus.length) {
+          root.innerHTML = '<p class="empty-note">メニューがありません。下のボタンで追加できます。</p>';
+          return;
+        }
+        var html = '<div class="table-scroll"><table class="master"><thead><tr>' +
+          '<th class="sticky">メニュー名</th><th>品番</th><th>1ケースの枚数</th><th>予備在庫（枚）</th><th></th></tr></thead><tbody>';
+        var last = "";
+        menusInOrder().forEach(function (menu) {
+          if (menu.category !== last) {
+            last = menu.category;
+            html += '<tr class="cat-row ' + CAT_CLASS[menu.category] + '"><th colspan="5">' + esc(menu.category) + "</th></tr>";
+          }
+          html += '<tr><td class="sticky"><input class="name-input" type="text" autocomplete="off" spellcheck="false" data-name-input="' +
+            esc(menu.id) + '" value="' + esc(menu.name) + '" aria-label="メニュー名"></td>';
+          html += '<td><input class="code-input" type="text" autocomplete="off" spellcheck="false" data-code-input="' +
+            esc(menu.id) + '" value="' + esc(menu.code) + '" aria-label="品番"><span class="share-hint" data-share="' + esc(menu.id) + '"></span></td>';
+          html += '<td><input class="num" inputmode="numeric" autocomplete="off" data-per-input="' + esc(menu.id) + '" value="' +
+            toInt(menu.perCase) + '" aria-label="1ケースの枚数"></td>';
+          html += '<td><input class="num" inputmode="numeric" autocomplete="off" data-reserve-input="' + esc(menu.id) + '" value="' +
+            toInt(menu.reserve) + '" aria-label="予備在庫"></td>';
+          html += '<td><button type="button" class="btn danger" data-delete-menu="' + esc(menu.id) + '">削除</button></td></tr>';
+        });
+        html += "</tbody></table></div>";
+        root.innerHTML = html;
+      }
+
+      function renderHolidays() {
+        var list = document.getElementById("holiday-list");
+        if (!state.holidays.length) {
+          list.innerHTML = '<li class="is-empty">登録された休みはありません</li>';
+          return;
+        }
+        list.innerHTML = state.holidays.map(function (day) {
+          return "<li><span>" + esc(formatMD(day)) + '</span><button type="button" class="icon-btn" data-remove-holiday="' +
+            esc(day) + '" aria-label="' + esc(formatMD(day) + "を削除") + '">✕</button></li>';
+        }).join("");
+      }
+
+      function renderAll() {
+        var dateInput = document.getElementById("order-date");
+        if (dateInput && document.activeElement !== dateInput) dateInput.value = state.orderDate;
+        renderMeals();
+        renderStock();
+        renderOrder();
+        renderMaster();
+        renderHolidays();
+        updateDerived();
+      }
+
+      function refreshContainers() {
+        renderStock();
+        renderOrder();
+        updateDerived();
+      }
+
+      function showTab(name) {
+        var calc = name === "calc";
+        document.getElementById("panel-calc").hidden = !calc;
+        document.getElementById("panel-master").hidden = calc;
+        document.getElementById("tab-calc").setAttribute("aria-selected", calc ? "true" : "false");
+        document.getElementById("tab-master").setAttribute("aria-selected", calc ? "false" : "true");
+      }
+
+      function setDialogMode(mode) {
+        document.getElementById("dialog-actions").hidden = mode !== "confirm";
+        document.getElementById("dialog-choices").hidden = mode !== "category";
+      }
+
+      function ask(message, okLabel, tone) {
+        var root = document.getElementById("dialog");
+        var ok = document.getElementById("dialog-ok");
+        var cancel = document.getElementById("dialog-cancel");
+        document.getElementById("dialog-text").textContent = message;
+        ok.textContent = okLabel || "OK";
+        ok.className = "btn " + (tone === "danger" ? "danger" : "primary");
+        setDialogMode("confirm");
+        root.hidden = false;
+        document.body.style.overflow = "hidden";
+        cancel.focus();
+        return new Promise(function (resolve) {
+          dialogResolver = function (value) {
+            dialogResolver = null;
+            root.hidden = true;
+            document.body.style.overflow = "";
+            resolve(value);
+          };
+        });
+      }
+
+      function closeDialog(value) {
+        if (dialogResolver) dialogResolver(value);
+      }
+
+      function pickCategory() {
+        var root = document.getElementById("dialog");
+        document.getElementById("dialog-text").textContent = "追加するメニューの分類を選んでください。";
+        setDialogMode("category");
+        root.hidden = false;
+        document.body.style.overflow = "hidden";
+        var first = document.querySelector("[data-pick-category]");
+        if (first) first.focus();
+        return new Promise(function (resolve) {
+          dialogResolver = function (value) {
+            dialogResolver = null;
+            root.hidden = true;
+            document.body.style.overflow = "";
+            resolve(value);
+          };
+        });
+      }
+
+      function ensureContainer(key) {
+        if (!state.containers[key]) state.containers[key] = { stock: 0, pending: [] };
+        if (!Array.isArray(state.containers[key].pending)) state.containers[key].pending = [];
+        return state.containers[key];
+      }
+
+      function moveRecord(oldKey, newKey, exceptId) {
+        if (oldKey === newKey) return false;
+        var others = state.menus.some(function (menu) {
+          return menu.id !== exceptId && containerKey(menu) === oldKey;
+        });
+        var oldRec = state.containers[oldKey];
+        var newHas = Object.prototype.hasOwnProperty.call(state.containers, newKey);
+        if (oldRec && !newHas && !others) {
+          state.containers[newKey] = oldRec;
+          delete state.containers[oldKey];
+        } else if (oldRec && !others && newHas) {
+          delete state.containers[oldKey];
+        }
+        return true;
+      }
+
+      function retargetContainer(menu, rawCode) {
+        var oldKey = containerKey(menu);
+        var trimmed = trimCode(rawCode);
+        var normalized = normalizeCode(trimmed);
+        var newKey = normalized ? "code:" + normalized : "id:" + menu.id;
+        var moved = moveRecord(oldKey, newKey, menu.id);
+        menu.code = trimmed;
+        return moved;
+      }
+
+      function setOrderDate(value, input) {
+        if (!isISO(value)) {
+          if (input && document.activeElement !== input) input.value = state.orderDate;
+          return;
+        }
+        if (value === state.orderDate) {
+          updateDerived();
+          return;
+        }
+        state.orderDate = value;
+        var pruned = prunePending();
+        save();
+        if (pruned) renderStock();
+        updateDerived();
+      }
+
+      function blurNumber(input) {
+        var n = toInt(input.value);
+        if (input.value !== String(n)) input.value = String(n);
+      }
+
+      function onInput(e) {
+        var t = e.target;
+        if (t.id === "order-date") { setOrderDate(t.value, t); return; }
+        var countId = t.getAttribute("data-count-for");
+        if (countId) {
+          var menu = findMenu(countId);
+          if (!menu) return;
+          menu.counts[Number(t.getAttribute("data-day"))] = toInt(t.value);
+          save();
+          updateDerived();
+          return;
+        }
+        var stockKey = t.getAttribute("data-stock-for");
+        if (stockKey) {
+          ensureContainer(stockKey).stock = toInt(t.value);
+          save();
+          updateDerived();
+          return;
+        }
+        var nameId = t.getAttribute("data-name-input");
+        if (nameId) {
+          var named = findMenu(nameId);
+          if (!named) return;
+          named.name = t.value;
+          save();
+          renderMeals();
+          updateDerived();
+          return;
+        }
+        var perId = t.getAttribute("data-per-input");
+        if (perId) {
+          var perMenu = findMenu(perId);
+          if (!perMenu) return;
+          perMenu.perCase = toInt(t.value);
+          save();
+          updateDerived();
+          return;
+        }
+        var reserveId = t.getAttribute("data-reserve-input");
+        if (reserveId) {
+          var reserveMenu = findMenu(reserveId);
+          if (!reserveMenu) return;
+          reserveMenu.reserve = toInt(t.value);
+          save();
+          updateDerived();
+        }
+      }
+
+      function onChange(e) {
+        var t = e.target;
+        if (t.id === "order-date") { setOrderDate(t.value, t); return; }
+        if (t.hasAttribute("data-count-for") || t.hasAttribute("data-stock-for") || t.hasAttribute("data-per-input") || t.hasAttribute("data-reserve-input")) {
+          blurNumber(t);
+        }
+        var codeId = t.getAttribute("data-code-input");
+        if (codeId) {
+          var menu = findMenu(codeId);
+          if (!menu) return;
+          var moved = retargetContainer(menu, t.value);
+          t.value = menu.code;
+          save();
+          if (moved) refreshContainers();
+          else updateDerived();
+          return;
+        }
+        var arrivalKey = t.getAttribute("data-arrival-for");
+        if (arrivalKey) {
+          var rec = state.containers[arrivalKey];
+          if (!rec) return;
+          var pendingId = t.getAttribute("data-pending-id");
+          var item = (rec.pending || []).filter(function (p) { return p.id === pendingId; })[0];
+          if (!item) return;
+          var auto = autoArrival(item.orderDate);
+          if (!isISO(t.value) || t.value === auto) item.manualArrival = null;
+          else item.manualArrival = t.value;
+          prunePending();
+          save();
+          renderStock();
+          updateDerived();
+        }
+      }
+
+      function addMenu() {
+        pickCategory().then(function (category) {
+          if (CATEGORIES.indexOf(category) === -1) return;
+          var menu = blankMenu("", category);
+          state.menus.push(menu);
+          save();
+          renderMeals();
+          renderMaster();
+          refreshContainers();
+          document.querySelectorAll("[data-name-input]").forEach(function (el) {
+            if (el.getAttribute("data-name-input") === menu.id) {
+              el.focus();
+              if (el.scrollIntoView) el.scrollIntoView({ block: "center" });
+            }
+          });
+        });
+      }
+
+      function deleteMenu(id) {
+        var menu = findMenu(id);
+        if (!menu) return;
+        var label = (menu.name || "").trim() || "このメニュー";
+        ask(label + " を削除しますか？", "削除する", "danger").then(function (ok) {
+          if (!ok) return;
+          var key = containerKey(menu);
+          state.menus = state.menus.filter(function (item) { return item.id !== id; });
+          var others = state.menus.some(function (item) { return containerKey(item) === key; });
+          if (!others && key.indexOf("id:") === 0) delete state.containers[key];
+          save();
+          renderAll();
+        });
+      }
+
+      function resetAll() {
+        ask("メニュー、食数、在庫、入荷待ち、配達休みを、最初のサンプルに戻します。よろしいですか？", "初期状態に戻す", "danger").then(function (ok) {
+          if (!ok) return;
+          state = defaultState();
+          saveNow();
+          renderAll();
+          var status = document.getElementById("order-status");
+          if (status) status.textContent = "";
+          var msg = document.getElementById("holiday-msg");
+          if (msg) msg.textContent = "";
+        });
+      }
+
+      function confirmOrder() {
+        var groups = getGroups().filter(function (g) { return g.cases > 0; });
+        var status = document.getElementById("order-status");
+        if (!groups.length) {
+          if (status) status.textContent = "発注ケース数がすべて0です。入荷待ちには追加しません。";
+          return;
+        }
+        var total = groups.reduce(function (sum, g) { return sum + g.cases; }, 0);
+        ask(groups.length + "種類（合計" + total + "ケース）を、入荷待ちとして記録します。よろしいですか？", "記録する", "primary").then(function (ok) {
+          if (!ok) return;
+          groups.forEach(function (g) {
+            var rec = ensureContainer(g.key);
+            rec.pending.push({
+              id: uid("p"),
+              cases: g.cases,
+              orderDate: state.orderDate,
+              manualArrival: null
+            });
+          });
+          saveNow();
+          renderStock();
+          updateDerived();
+          if (status) status.textContent = "記録しました。入荷待ちを差し引いたので、発注ケース数は0に戻っています。";
+        });
+      }
+
+      function removePending(key, id) {
+        ask("この入荷待ちを取り消しますか？", "取り消す", "danger").then(function (ok) {
+          if (!ok) return;
+          var rec = state.containers[key];
+          if (!rec) return;
+          rec.pending = (rec.pending || []).filter(function (item) { return item.id !== id; });
+          save();
+          renderStock();
+          updateDerived();
+        });
+      }
+
+      function addHoliday() {
+        var input = document.getElementById("holiday-date");
+        var msg = document.getElementById("holiday-msg");
+        var value = input.value;
+        if (!isISO(value)) {
+          if (msg) msg.textContent = "日付を選んでから追加してください。";
+          return;
+        }
+        if (state.holidays.indexOf(value) !== -1) {
+          if (msg) msg.textContent = "その日はすでに登録されています。";
+          return;
+        }
+        state.holidays.push(value);
+        state.holidays.sort();
+        prunePending();
+        save();
+        input.value = "";
+        if (msg) msg.textContent = formatMD(value) + " を追加しました。";
+        renderHolidays();
+        renderStock();
+        updateDerived();
+      }
+
+      function removeHoliday(day) {
+        state.holidays = state.holidays.filter(function (item) { return item !== day; });
+        prunePending();
+        save();
+        var msg = document.getElementById("holiday-msg");
+        if (msg) msg.textContent = formatMD(day) + " を削除しました。";
+        renderHolidays();
+        renderStock();
+        updateDerived();
+      }
+
+      function currentIsDark() {
+        var mode = document.documentElement.getAttribute("data-theme");
+        if (mode === "dark") return true;
+        if (mode === "light") return false;
+        return window.matchMedia("(prefers-color-scheme: dark)").matches;
+      }
+
+      function updateThemeButton() {
+        var dark = currentIsDark();
+        var btn = document.getElementById("theme-toggle");
+        btn.textContent = dark ? "明るくする" : "暗くする";
+        btn.setAttribute("aria-pressed", dark ? "true" : "false");
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", dark ? "#1c1917" : "#1f5c45");
+      }
+
+      function toggleTheme() {
+        var next = currentIsDark() ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+        updateThemeButton();
+      }
+
+      function onClick(e) {
+        var t = e.target.closest("button");
+        if (!t) return;
+        if (t.id === "tab-calc") showTab("calc");
+        else if (t.id === "tab-master") showTab("master");
+        else if (t.id === "theme-toggle") toggleTheme();
+        else if (t.id === "add-menu") addMenu();
+        else if (t.id === "reset-all") resetAll();
+        else if (t.id === "confirm-order") confirmOrder();
+        else if (t.id === "add-holiday") addHoliday();
+        else if (t.id === "dialog-ok") closeDialog(true);
+        else if (t.id === "dialog-cancel" || t.id === "dialog-choice-cancel") closeDialog(false);
+        else if (t.hasAttribute("data-pick-category")) closeDialog(t.getAttribute("data-pick-category"));
+        else if (t.hasAttribute("data-delete-menu")) deleteMenu(t.getAttribute("data-delete-menu"));
+        else if (t.hasAttribute("data-remove-pending")) removePending(t.getAttribute("data-pending-key"), t.getAttribute("data-remove-pending"));
+        else if (t.hasAttribute("data-remove-holiday")) removeHoliday(t.getAttribute("data-remove-holiday"));
+      }
+
+      function onKeyDown(e) {
+        if (e.key === "Escape") closeDialog(false);
+      }
+
+      function onDialogBackdrop(e) {
+        if (e.target.id === "dialog") closeDialog(false);
+      }
+
+      document.addEventListener("input", onInput);
+      document.addEventListener("change", onChange);
+      document.addEventListener("click", onClick);
+      document.addEventListener("keydown", onKeyDown);
+      document.getElementById("dialog").addEventListener("click", onDialogBackdrop);
+      document.addEventListener("focusin", function (e) {
+        var t = e.target;
+        if (t.matches && t.matches("[data-count-for], [data-stock-for], [data-per-input], [data-reserve-input]")) {
+          t.select();
+        }
+      });
+      window.addEventListener("pagehide", saveNow);
+
+      state = readState();
+      if (!state.orderDate || state.orderDate < todayISO()) state.orderDate = todayISO();
+      prunePending();
+      updateThemeButton();
+      renderAll();
+      saveNow();
+
+      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () {
+        if (!document.documentElement.getAttribute("data-theme")) updateThemeButton();
+      });
+    })();
+  </script>
+</body>
+</html>
