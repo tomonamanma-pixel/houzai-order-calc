@@ -379,12 +379,12 @@
             <span id="order-weekday" class="weekday-lg"></span>
           </div>
           <p class="arrival" id="arrival-text" aria-live="polite"></p>
-          <p class="hint">発注する日を選んでください。届くのは2日後です。木曜・日曜と、休みに入れた日は届かないので、次の日になります。</p>
+          <p class="hint">発注する日を選んでください。次の発注は、同じ曜日の1週間後です。届くのは発注日の2日後です。木曜・日曜と、休みに入れた日は届かないので、次の日になります。</p>
         </section>
 
         <section class="card card-meals">
           <h2>2. 来週の食数</h2>
-          <p class="hint">月〜土に作る食数を入れてください。1食で容器が1枚要ります。右は6日分の合計です。蓋は入れません。本体と同じ食数になります。カキフライ弁当の中皿と唐揚げ弁当の中皿も入れません。</p>
+          <p class="hint">月〜土に作る食数を入れてください。1食で容器が1枚要ります。右は6日分の合計です。発注数は、この合計そのものではありません。次に届く前日までの分だけです。蓋は入れません。本体と同じ食数になります。カキフライ弁当の中皿と唐揚げ弁当の中皿も入れません。</p>
           <p class="scroll-hint">火〜土は、表を横にスライドすると見えます。</p>
           <div id="meals-root"></div>
         </section>
@@ -400,7 +400,7 @@
           <h2>4. アスピットに入れる数</h2>
           <p class="summary" id="order-summary"></p>
           <p class="do-this">オレンジの数字を、アスピットの同じ品番に入力してください。0は入力しません。</p>
-          <p class="formula">来週使う枚数と、多めに持つ枚数から、今ある枚数と届く予定を引いた数です。1ケースに足りない端数は切り上げます。</p>
+          <p class="formula">次に届く日の前日までに使う枚数から、届いたときに残る枚数を引きます。多めには出しません。1ケースに足りない端数だけ切り上げます。</p>
           <div class="order-list" id="order-list"></div>
           <button type="button" class="btn primary xl" id="confirm-order">入力したので記録する</button>
           <p class="hint">このボタンはアスピットへは送りません。先に数字をアスピットへ入れ、そのあと押してください。押すと、まだ届いていない分として残るので、次に二重で注文しません。</p>
@@ -411,7 +411,7 @@
       <section id="panel-master" class="panel" aria-label="メニュー・容器" hidden>
         <section class="card">
           <h2>メニュー・容器</h2>
-          <p class="hint">ふだんの発注では使いません。品番や、1ケースの枚数を直すときだけ開いてください。同じ品番は1つにまとまります。1ケースの枚数と、多めに持つ枚数は、一番上の行が使われます。蓋を別に頼むときは「元気べんとう（蓋）」という名前で追加します。</p>
+          <p class="hint">ふだんの発注では使いません。品番や、1ケースの枚数を直すときだけ開いてください。同じ品番は1つにまとまります。1ケースの枚数は、一番上の行が使われます。多めに持つ枚数は、発注数には足しません。蓋を別に頼むときは「元気べんとう（蓋）」という名前で追加します。</p>
           <p class="scroll-hint">表は横にスライドできます。</p>
           <div id="master-root"></div>
           <div class="actions">
@@ -830,6 +830,95 @@
         return uses;
       }
 
+      function dayUseIndex(iso) {
+        var d = parseISO(iso).getDay();
+        if (d === 0) return -1;
+        return d - 1;
+      }
+
+      function menuDayUse(menu, iso) {
+        var idx = dayUseIndex(iso);
+        if (idx < 0) return 0;
+        var bases = linkedBases(menu);
+        if (!bases.length) return toInt(menu.counts[idx]);
+        return bases.reduce(function (sum, base) { return sum + toInt(base.counts[idx]); }, 0);
+      }
+
+      function groupDayUse(menus, key, iso) {
+        var usage = 0;
+        menus.forEach(function (menu) {
+          var bases = linkedBases(menu);
+          if (bases.length && bases.some(function (base) { return containerKey(base) === key; })) return;
+          usage += menuDayUse(menu, iso);
+        });
+        return usage;
+      }
+
+      function coverSpan() {
+        var start = state.orderDate;
+        if (!isISO(start)) return { start: "", thisArrival: "", nextArrival: "" };
+        return {
+          start: start,
+          thisArrival: autoArrival(start),
+          nextArrival: autoArrival(addDays(start, 7))
+        };
+      }
+
+      function coverNeed(menus, key, stock, pending, perCase) {
+        var span = coverSpan();
+        var empty = { usage: 0, need: 0, cases: 0, shortBefore: 0, ready: 0, laterIncoming: 0, incoming: 0 };
+        if (!span.thisArrival || !span.nextArrival || span.nextArrival <= span.start) return empty;
+        var arrivals = {};
+        var incoming = 0;
+        pending.forEach(function (item) {
+          var day = effectiveArrival(item);
+          if (day >= span.nextArrival) return;
+          var pieces = toInt(item.cases) * perCase;
+          if (!arrivals[day]) arrivals[day] = 0;
+          arrivals[day] += pieces;
+          incoming += pieces;
+        });
+        var balance = stock;
+        var ready = 0;
+        var laterIncoming = 0;
+        var minAfter = null;
+        var shortBefore = 0;
+        var usage = 0;
+        var day = span.start;
+        for (var n = 0; n < 80 && day < span.nextArrival; n++) {
+          if (arrivals[day]) {
+            balance += arrivals[day];
+            if (day > span.thisArrival) laterIncoming += arrivals[day];
+          }
+          if (day === span.thisArrival) ready = balance;
+          var use = groupDayUse(menus, key, day);
+          if (day >= span.thisArrival) usage += use;
+          balance -= use;
+          if (day < span.thisArrival) {
+            if (balance < 0) {
+              shortBefore += -balance;
+              balance = 0;
+            }
+          } else if (minAfter === null || balance < minAfter) {
+            minAfter = balance;
+          }
+          day = addDays(day, 1);
+        }
+        if (minAfter === null) minAfter = 0;
+        var need = minAfter < 0 ? -minAfter : 0;
+        var cases = 0;
+        if (need > 0 && perCase > 0) cases = Math.ceil(need / perCase);
+        return {
+          usage: usage,
+          need: need,
+          cases: cases,
+          shortBefore: shortBefore,
+          ready: ready,
+          laterIncoming: laterIncoming,
+          incoming: incoming
+        };
+      }
+
       function getGroups() {
         var map = new Map();
         menusInOrder().forEach(function (menu) {
@@ -851,19 +940,9 @@
             return a.id < b.id ? -1 : 1;
           });
           var pendingCases = pending.reduce(function (sum, item) { return sum + toInt(item.cases); }, 0);
-          var usage = 0;
-          menus.forEach(function (menu) {
-            var bases = linkedBases(menu);
-            if (bases.length && bases.some(function (base) { return containerKey(base) === key; })) return;
-            usage += menuUsage(menu);
-          });
           var perCase = toInt(top.perCase);
-          var reserve = toInt(top.reserve);
           var stock = toInt(rec.stock);
-          var incoming = pendingCases * perCase;
-          var need = usage + reserve - stock - incoming;
-          var cases = 0;
-          if (need > 0 && perCase > 0) cases = Math.ceil(need / perCase);
+          var cover = coverNeed(menus, key, stock, pending, perCase);
           groups.push({
             key: key,
             menus: menus,
@@ -871,14 +950,17 @@
             name: menus.map(menuLabel).join("・"),
             code: trimCode(top.code),
             perCase: perCase,
-            reserve: reserve,
+            reserve: toInt(top.reserve),
             stock: stock,
-            usage: usage,
+            usage: cover.usage,
             pending: pending,
             pendingCases: pendingCases,
-            incoming: incoming,
-            cases: cases,
-            need: need
+            incoming: cover.incoming,
+            ready: cover.ready,
+            laterIncoming: cover.laterIncoming,
+            shortBefore: cover.shortBefore,
+            cases: cover.cases,
+            need: cover.need
           });
         });
         return groups;
@@ -913,10 +995,10 @@
         var weekday = document.getElementById("order-weekday");
         if (weekday) weekday.textContent = state.orderDate ? "（" + weekdayChar(state.orderDate) + "）" : "";
         var arrival = document.getElementById("arrival-text");
-        var arrivalISO = autoArrival(state.orderDate);
+        var span = coverSpan();
         if (arrival) {
-          arrival.textContent = arrivalISO
-            ? "この注文は " + formatMD(arrivalISO) + " に届きます"
+          arrival.textContent = span.thisArrival && span.nextArrival
+            ? "この注文は " + formatMD(span.thisArrival) + " に届きます。次の注文は " + formatMD(span.nextArrival) + " に届きます"
             : "発注する日を選んでください";
         }
 
@@ -954,7 +1036,18 @@
           setBind(map, g.key, "usage", g.usage + "枚");
           setBind(map, g.key, "per", String(g.perCase));
           setBind(map, g.key, "cases", String(g.cases));
-          setBind(map, g.key, "break", "来週使う" + g.usage + "枚 ＋ 多めに持つ" + g.reserve + "枚 − 今ある" + g.stock + "枚 − 届く予定" + g.incoming + "枚");
+          var detail = "次まで使う" + g.usage + "枚。届いたときに残る" + g.ready + "枚。";
+          if (g.laterIncoming) detail += "そのあと届く" + g.laterIncoming + "枚。";
+          detail += "足りない" + g.need + "枚。";
+          setBind(map, g.key, "break", detail);
+          var soon = map[g.key] && map[g.key].soon;
+          if (soon) {
+            soon.forEach(function (el) {
+              var showSoon = g.shortBefore > 0;
+              el.hidden = !showSoon;
+              el.textContent = showSoon ? "届く前に" + g.shortBefore + "枚足りません。この注文では間に合いません。" : "";
+            });
+          }
           var cards = map[g.key] && map[g.key].card;
           if (cards) cards.forEach(function (el) { el.classList.toggle("hot", g.cases > 0); });
           var warns = map[g.key] && map[g.key].warn;
@@ -1030,7 +1123,7 @@
           return;
         }
         var html = '<div class="table-scroll"><table class="stock"><thead><tr>' +
-          '<th class="sticky">容器</th><th>今ある枚数</th><th>来週使う</th><th>品番</th><th>まだ届いていない</th></tr></thead><tbody>';
+          '<th class="sticky">容器</th><th>今ある枚数</th><th>次まで使う</th><th>品番</th><th>まだ届いていない</th></tr></thead><tbody>';
         groups.forEach(function (g) {
           html += '<tr><th class="sticky name-cell" scope="row" data-bind="name" data-k="' + esc(g.key) + '">' + esc(g.name) + "</th>";
           html += '<td><div class="with-unit"><input class="num" inputmode="numeric" autocomplete="off" data-stock-for="' +
@@ -1073,6 +1166,7 @@
             '<p class="order-meta">アスピットの品番 <strong data-bind="code" data-k="' + esc(g.key) + '"' + (g.code ? "" : ' class="is-empty"') + ">" +
             esc(g.code || "品番なし") + "</strong>　1ケース <strong data-bind=\"per\" data-k=\"" + esc(g.key) + "\">" + g.perCase + "</strong>枚</p>" +
             '<p class="breakdown" data-bind="break" data-k="' + esc(g.key) + '"></p>' +
+            '<p class="warn" data-bind="soon" data-k="' + esc(g.key) + '" hidden></p>' +
             '<p class="warn" data-bind="warn" data-k="' + esc(g.key) + '" hidden>1ケースの枚数が0です。容器の登録を直してください</p></div>' +
             '<div class="order-qty"><span class="order-num" data-bind="cases" data-k="' + esc(g.key) + '">' + g.cases +
             '</span><span class="order-unit">ケース</span></div></article>';
