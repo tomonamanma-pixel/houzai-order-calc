@@ -376,7 +376,7 @@
 
         <section class="card card-meals">
           <h2>2. 来週のメニュー食数（日別）</h2>
-          <p class="hint">月〜土の食数を入れてください。1食につき、容器を1枚使います。「元気べんとう（蓋）」のように登録したメニューは、元気べんとうと同じ食数になります。右端は6日分の合計です。</p>
+          <p class="hint">月〜土の食数を入れてください。1食につき、容器を1枚使います。うしろが（蓋）のメニューは、本体と同じ食数になります。カキフライ弁当の中皿は「カキフライ弁当（本体）」、唐揚げ弁当の中皿は「唐揚げ弁当」と同じ食数です。右端は6日分の合計です。</p>
           <p class="scroll-hint">表は横にスライドできます。</p>
           <div id="meals-root"></div>
         </section>
@@ -402,7 +402,7 @@
       <section id="panel-master" class="panel" aria-label="メニュー・容器" hidden>
         <section class="card">
           <h2>メニュー・容器</h2>
-          <p class="hint">同じ品番は自動で1つにまとまります。1ケースの枚数と予備在庫は、同じ品番のうち一番上の行を使います。品番が空のメニューは、それぞれ別になります。品番は、入力欄から離れると反映されます。蓋を別に注文するものは、「元気べんとう（蓋）」という名前でメニューを追加します。</p>
+          <p class="hint">同じ品番は自動で1つにまとまります。1ケースの枚数と予備在庫は、同じ品番のうち一番上の行を使います。品番が空のメニューは、それぞれ別になります。品番は、入力欄から離れると反映されます。蓋を別に注文するものは、「元気べんとう（蓋）」という名前でメニューを追加します。中皿を本体と連動させるのは、「カキフライ弁当（中皿）」と「唐揚げ弁当（中皿）」です。</p>
           <p class="scroll-hint">表は横にスライドできます。</p>
           <div id="master-root"></div>
           <div class="actions">
@@ -578,17 +578,37 @@
         return String(value == null ? "" : value).replace(/^[\s\u3000]+|[\s\u3000]+$/g, "");
       }
 
-      function lidBaseName(name) {
-        var match = trimName(name).match(/^(.+?)[（(]\s*蓋\s*[）)]$/);
-        return match ? trimName(match[1]) : "";
+      var LINKED_PLATES = { "カキフライ弁当": true, "唐揚げ弁当": true };
+
+      function nameParts(name) {
+        var text = trimName(name);
+        var match = text.match(/^(.+?)[（(]\s*(蓋|中皿|ナカ皿|なか皿|本体)\s*[）)]$/);
+        if (!match) return { base: text, kind: "" };
+        var kind = match[2];
+        if (kind === "ナカ皿" || kind === "なか皿") kind = "中皿";
+        return { base: trimName(match[1]), kind: kind };
+      }
+
+      function isLinkedPart(menu) {
+        var part = nameParts(menu.name);
+        if (part.kind === "蓋") return true;
+        return part.kind === "中皿" && !!LINKED_PLATES[part.base];
       }
 
       function linkedBases(menu) {
-        var base = lidBaseName(menu.name);
-        if (!base) return [];
+        if (!isLinkedPart(menu)) return [];
+        var base = nameParts(menu.name).base;
         return state.menus.filter(function (other) {
-          return other.id !== menu.id && !lidBaseName(other.name) && trimName(other.name) === base;
+          if (other.id === menu.id) return false;
+          var part = nameParts(other.name);
+          if (part.base !== base) return false;
+          if (part.kind === "蓋" || part.kind === "中皿") return false;
+          return part.kind === "" || part.kind === "本体";
         });
+      }
+
+      function linkedNote(menu) {
+        return linkedBases(menu).map(menuLabel).join("・") + "と同じ食数";
       }
 
       function blankMenu(name, category, code, perCase, reserve) {
@@ -979,7 +999,7 @@
             esc(menuLabel(menu)) + "</th>";
           var bases = linkedBases(menu);
           if (bases.length) {
-            html += '<td class="lid-note" colspan="6">' + esc(lidBaseName(menu.name)) + "と同じ食数</td>";
+            html += '<td class="lid-note" colspan="6">' + esc(linkedNote(menu)) + "</td>";
           } else {
             menu.counts.forEach(function (count, index) {
               html += '<td><input class="num" inputmode="numeric" autocomplete="off" data-count-for="' + esc(menu.id) +
