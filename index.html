@@ -384,7 +384,7 @@
 
         <section class="card card-meals">
           <h2>2. 来週の食数</h2>
-          <p class="hint">月〜土に作る食数を入れてください。1食で容器が1枚要ります。右は6日分の合計です。発注数は、この合計そのものではありません。次に届く前日までの分だけです。蓋は入れません。本体と同じ食数になります。カキフライ弁当の中皿と唐揚げ弁当の中皿も入れません。</p>
+          <p class="hint">月〜土に作る食数を入れてください。1食で容器が1枚要ります。右は6日分の合計です。発注数は、この合計そのものではありません。次に届く前日までの分だけです。蓋と中皿は入れません。本体と同じ食数になります。</p>
           <p class="scroll-hint">火〜土は、表を横にスライドすると見えます。</p>
           <div id="meals-root"></div>
         </section>
@@ -411,7 +411,7 @@
       <section id="panel-master" class="panel" aria-label="メニュー・容器" hidden>
         <section class="card">
           <h2>メニュー・容器</h2>
-          <p class="hint">ふだんの発注では使いません。品番や、1ケースの枚数を直すときだけ開いてください。同じ品番は1つにまとまります。1ケースの枚数は、一番上の行が使われます。多めに持つ枚数は、発注数には足しません。蓋を別に頼むときは「元気べんとう（蓋）」という名前で追加します。</p>
+          <p class="hint">ふだんの発注では使いません。品番や、1ケースの枚数を直すときだけ開いてください。同じ品番は1つにまとまります。1ケースの枚数は、一番上の行が使われます。多めに持つ枚数は、発注数には足しません。蓋と中皿は本体と同じ食数になります。名前は「元気べんとう（蓋）」「親子丼（中皿）」のようにします。</p>
           <p class="scroll-hint">表は横にスライドできます。</p>
           <div id="master-root"></div>
           <div class="actions">
@@ -587,8 +587,6 @@
         return String(value == null ? "" : value).replace(/^[\s\u3000]+|[\s\u3000]+$/g, "");
       }
 
-      var LINKED_PLATES = { "カキフライ弁当": true, "唐揚げ弁当": true };
-
       function nameParts(name) {
         var text = trimName(name);
         var match = text.match(/^(.+?)[（(]\s*(蓋|中皿|ナカ皿|なか皿|本体)\s*[）)]$/);
@@ -599,9 +597,8 @@
       }
 
       function isLinkedPart(menu) {
-        var part = nameParts(menu.name);
-        if (part.kind === "蓋") return true;
-        return part.kind === "中皿" && !!LINKED_PLATES[part.base];
+        var kind = nameParts(menu.name).kind;
+        return kind === "蓋" || kind === "中皿";
       }
 
       function linkedBases(menu) {
