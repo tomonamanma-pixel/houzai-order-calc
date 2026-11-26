@@ -351,7 +351,7 @@
       <div class="top-row">
         <div>
           <h1>包材発注計算</h1>
-          <p class="lead">食数と今ある枚数を入れると、アスピットに入力するケース数がわかります。</p>
+          <p class="lead">上から 1、2、3 の順に入れてください。最後のオレンジの数字を、アスピットに入力します。</p>
         </div>
       </div>
       </header>
@@ -363,7 +363,7 @@
     <main>
       <section id="panel-calc" class="panel" aria-label="発注計算">
         <section class="card card-date">
-          <h2>1. 発注日</h2>
+          <h2>1. 発注する日</h2>
           <div class="date-row">
             <label class="field" for="order-date">発注日
               <input type="date" id="order-date">
@@ -371,30 +371,30 @@
             <span id="order-weekday" class="weekday-lg"></span>
           </div>
           <p class="arrival" id="arrival-text" aria-live="polite"></p>
-          <p class="hint">入荷は発注日の2日後です。木曜・日曜と、「メニュー・容器」で登録した配達休みは、次の日にずれます。</p>
+          <p class="hint">発注する日を選んでください。届くのは2日後です。木曜・日曜と、休みに入れた日は届かないので、次の日になります。</p>
         </section>
 
         <section class="card card-meals">
-          <h2>2. 来週のメニュー食数（日別）</h2>
-          <p class="hint">月〜土の食数を入れてください。1食につき、容器を1枚使います。うしろが（蓋）のメニューは、本体と同じ食数になります。カキフライ弁当の中皿は「カキフライ弁当（本体）」、唐揚げ弁当の中皿は「唐揚げ弁当」と同じ食数です。右端は6日分の合計です。</p>
-          <p class="scroll-hint">表は横にスライドできます。</p>
+          <h2>2. 来週の食数</h2>
+          <p class="hint">月〜土に作る食数を入れてください。1食で容器が1枚要ります。右は6日分の合計です。蓋は入れません。本体と同じ食数になります。カキフライ弁当の中皿と唐揚げ弁当の中皿も入れません。</p>
+          <p class="scroll-hint">火〜土は、表を横にスライドすると見えます。</p>
           <div id="meals-root"></div>
         </section>
 
         <section class="card card-stock">
-          <h2>3. 現在庫（バラの枚数）</h2>
-          <p class="hint">今、棚にある枚数を入れてください。入荷待ちは、発注済みでまだ届いていない分です。発注日までに届く分は表示から消えるので、その枚数は次に数える現在庫へ入れてください。</p>
-          <p class="scroll-hint">表は横にスライドできます。</p>
+          <h2>3. 今、棚にある枚数</h2>
+          <p class="hint">箱を開けて、1枚ずつ数えた数を入れてください。まだ届いていない発注は、表の右に出ます。届いた分は、次に数えるときに入れてください。</p>
+          <p class="scroll-hint">右の列は、表を横にスライドすると見えます。</p>
           <div id="stock-root"></div>
         </section>
 
         <section class="card card-order">
-          <h2>4. アスピットに入力する数（ケース）</h2>
+          <h2>4. アスピットに入れる数</h2>
           <p class="summary" id="order-summary"></p>
           <div class="order-list" id="order-list"></div>
-          <p class="formula">足りない枚数 = 使用予定 + 予備在庫 − 現在庫 − 入荷待ちの枚数。それを1ケースの枚数で割って、端数は切り上げます。</p>
-          <button type="button" class="btn primary xl" id="confirm-order">発注を確定（入荷待ちとして記録）</button>
-          <p class="hint">確定すると、0より大きいケース数を入荷待ちに足します。足した分は差し引かれるので、発注ケース数は0に戻ります。</p>
+          <p class="formula">オレンジの数字を、アスピットの同じ品番に入力してください。0は入力しません。来週使う枚数と、多めに持つ枚数から、今ある枚数と届く予定を引いた数です。1ケースに足りない端数は切り上げます。</p>
+          <button type="button" class="btn primary xl" id="confirm-order">入力したので記録する</button>
+          <p class="hint">このボタンはアスピットへは送りません。先に数字をアスピットへ入れ、そのあと押してください。押すと、まだ届いていない分として残るので、次に二重で注文しません。</p>
           <p class="status" id="order-status" aria-live="polite"></p>
         </section>
       </section>
@@ -402,7 +402,7 @@
       <section id="panel-master" class="panel" aria-label="メニュー・容器" hidden>
         <section class="card">
           <h2>メニュー・容器</h2>
-          <p class="hint">同じ品番は自動で1つにまとまります。1ケースの枚数と予備在庫は、同じ品番のうち一番上の行を使います。品番が空のメニューは、それぞれ別になります。品番は、入力欄から離れると反映されます。蓋を別に注文するものは、「元気べんとう（蓋）」という名前でメニューを追加します。中皿を本体と連動させるのは、「カキフライ弁当（中皿）」と「唐揚げ弁当（中皿）」です。</p>
+          <p class="hint">ふだんの発注では使いません。品番や、1ケースの枚数を直すときだけ開いてください。同じ品番は1つにまとまります。1ケースの枚数と、多めに持つ枚数は、一番上の行が使われます。蓋を別に頼むときは「元気べんとう（蓋）」という名前で追加します。</p>
           <p class="scroll-hint">表は横にスライドできます。</p>
           <div id="master-root"></div>
           <div class="actions">
@@ -412,7 +412,7 @@
         </section>
         <section class="card">
           <h2>配達休みの日</h2>
-          <p class="hint">選んだ日は入荷しません。木曜と日曜は、ここへ入れなくても休みです。</p>
+          <p class="hint">届かない日を追加します。木曜と日曜は、入れなくても届きません。</p>
           <div class="holiday-add">
             <label class="field" for="holiday-date">日付
               <input type="date" id="holiday-date">
@@ -744,8 +744,8 @@
         var note = document.getElementById("save-note");
         if (note) {
           note.textContent = canStore
-            ? "入力内容はこの端末に保存されます。"
-            : "この端末には保存できません。画面を閉じると入力は消えます。";
+            ? "入力した内容は、この端末に残ります。"
+            : "この端末には残せません。画面を閉じると、入力は消えます。";
         }
       }
 
@@ -907,8 +907,8 @@
         var arrivalISO = autoArrival(state.orderDate);
         if (arrival) {
           arrival.textContent = arrivalISO
-            ? "今回の発注は " + formatMD(arrivalISO) + " に入荷します"
-            : "発注日を入力してください";
+            ? "この注文は " + formatMD(arrivalISO) + " に届きます"
+            : "発注する日を選んでください";
         }
 
         state.menus.forEach(function (menu) {
@@ -930,11 +930,11 @@
         var groups = getGroups();
         var ordering = groups.filter(function (g) { return g.cases > 0; }).length;
         var summary = document.getElementById("order-summary");
-        if (summary) summary.textContent = "今回発注するもの: " + ordering + " / " + groups.length + " 種類";
+        if (summary) summary.textContent = "アスピットに入れるもの: " + ordering + "種類（0は入れません）";
         var map = binds();
         groups.forEach(function (g) {
           setBind(map, g.key, "name", g.name);
-          var codeText = g.code || "未設定";
+          var codeText = g.code || "品番なし";
           var codeEls = map[g.key] && map[g.key].code;
           if (codeEls) {
             codeEls.forEach(function (el) {
@@ -945,7 +945,7 @@
           setBind(map, g.key, "usage", g.usage + "枚");
           setBind(map, g.key, "per", String(g.perCase));
           setBind(map, g.key, "cases", String(g.cases));
-          setBind(map, g.key, "break", "使用予定 " + g.usage + "枚 ＋ 予備 " + g.reserve + "枚 − 在庫 " + g.stock + "枚 − 入荷待ち " + g.incoming + "枚");
+          setBind(map, g.key, "break", "来週使う" + g.usage + "枚 ＋ 多めに持つ" + g.reserve + "枚 − 今ある" + g.stock + "枚 − 届く予定" + g.incoming + "枚");
           var cards = map[g.key] && map[g.key].card;
           if (cards) cards.forEach(function (el) { el.classList.toggle("hot", g.cases > 0); });
           var warns = map[g.key] && map[g.key].warn;
@@ -957,7 +957,7 @@
           }
           document.querySelectorAll("[data-stock-for]").forEach(function (el) {
             if (el.getAttribute("data-stock-for") === g.key) {
-              el.setAttribute("aria-label", g.name + "の現在庫");
+              el.setAttribute("aria-label", g.name + "の今ある枚数");
             }
           });
         });
@@ -968,8 +968,8 @@
         if (!normalizeCode(menu.code)) return "";
         var uses = usesOf(containerKey(menu));
         if (uses.length < 2) return "";
-        if (uses[0] === menu.id) return "同じ品番 " + uses.length + "件の代表。この行の枚数と予備を使います";
-        return "同じ品番です。枚数と予備は代表の行を使います";
+        if (uses[0] === menu.id) return "同じ品番が" + uses.length + "件あります。1ケースの枚数は、この行を使います";
+        return "同じ品番です。1ケースの枚数は、一番上の行を使います";
       }
 
       function updateMasterHints() {
@@ -1021,13 +1021,13 @@
           return;
         }
         var html = '<div class="table-scroll"><table class="stock"><thead><tr>' +
-          '<th class="sticky">品目</th><th>現在庫</th><th>使用予定</th><th>品番</th><th>入荷待ち</th></tr></thead><tbody>';
+          '<th class="sticky">容器</th><th>今ある枚数</th><th>来週使う</th><th>品番</th><th>まだ届いていない</th></tr></thead><tbody>';
         groups.forEach(function (g) {
           html += '<tr><th class="sticky name-cell" scope="row" data-bind="name" data-k="' + esc(g.key) + '">' + esc(g.name) + "</th>";
           html += '<td><div class="with-unit"><input class="num" inputmode="numeric" autocomplete="off" data-stock-for="' +
-            esc(g.key) + '" value="' + g.stock + '" aria-label="' + esc(g.name + "の現在庫") + '"><span>枚</span></div></td>';
+            esc(g.key) + '" value="' + g.stock + '" aria-label="' + esc(g.name + "の今ある枚数") + '"><span>枚</span></div></td>';
           html += '<td class="usage-cell" data-bind="usage" data-k="' + esc(g.key) + '">' + g.usage + "枚</td>";
-          html += '<td data-bind="code" data-k="' + esc(g.key) + '"' + (g.code ? "" : ' class="is-empty"') + ">" + esc(g.code || "未設定") + "</td>";
+          html += '<td data-bind="code" data-k="' + esc(g.key) + '"' + (g.code ? "" : ' class="is-empty"') + ">" + esc(g.code || "品番なし") + "</td>";
           html += '<td><div class="pending-list">';
           if (!g.pending.length) {
             html += '<span class="is-empty">なし</span>';
@@ -1042,7 +1042,7 @@
               html += '<span class="weekday-lg">' + esc(weekdayChar(arrival)) + "</span>";
               if (manual) html += '<span class="pencil" title="手で変更しています">✎</span>';
               html += '<button type="button" class="icon-btn" data-remove-pending="' + esc(item.id) + '" data-pending-key="' +
-                esc(g.key) + '" aria-label="入荷待ちを取り消す">✕</button></div>';
+                esc(g.key) + '" aria-label="まだ届いていない分を消す">✕</button></div>';
             });
           }
           html += "</div></td></tr>";
@@ -1061,10 +1061,10 @@
         root.innerHTML = groups.map(function (g) {
           return '<article class="order-card' + (g.cases > 0 ? " hot" : "") + '" data-bind="card" data-k="' + esc(g.key) + '">' +
             '<div><p class="order-name" data-bind="name" data-k="' + esc(g.key) + '">' + esc(g.name) + "</p>" +
-            '<p class="order-meta">品番 <strong data-bind="code" data-k="' + esc(g.key) + '"' + (g.code ? "" : ' class="is-empty"') + ">" +
-            esc(g.code || "未設定") + "</strong>　1ケース <strong data-bind=\"per\" data-k=\"" + esc(g.key) + "\">" + g.perCase + "</strong>枚</p>" +
+            '<p class="order-meta">アスピットの品番 <strong data-bind="code" data-k="' + esc(g.key) + '"' + (g.code ? "" : ' class="is-empty"') + ">" +
+            esc(g.code || "品番なし") + "</strong>　1ケース <strong data-bind=\"per\" data-k=\"" + esc(g.key) + "\">" + g.perCase + "</strong>枚</p>" +
             '<p class="breakdown" data-bind="break" data-k="' + esc(g.key) + '"></p>' +
-            '<p class="warn" data-bind="warn" data-k="' + esc(g.key) + '" hidden>1ケースの枚数を1以上にしてください</p></div>' +
+            '<p class="warn" data-bind="warn" data-k="' + esc(g.key) + '" hidden>1ケースの枚数が0です。容器の登録を直してください</p></div>' +
             '<div class="order-qty"><span class="order-num" data-bind="cases" data-k="' + esc(g.key) + '">' + g.cases +
             '</span><span class="order-unit">ケース</span></div></article>';
         }).join("");
@@ -1077,7 +1077,7 @@
           return;
         }
         var html = '<div class="table-scroll"><table class="master"><thead><tr>' +
-          '<th class="sticky">メニュー名</th><th>分類</th><th>品番</th><th>1ケースの枚数</th><th>予備在庫（枚）</th><th></th></tr></thead><tbody>';
+          '<th class="sticky">メニュー名</th><th>分類</th><th>品番</th><th>1ケースの枚数</th><th>多めに持つ枚数</th><th></th></tr></thead><tbody>';
         var last = "";
         menusInOrder().forEach(function (menu) {
           if (menu.category !== last) {
@@ -1096,7 +1096,7 @@
           html += '<td><input class="num" inputmode="numeric" autocomplete="off" data-per-input="' + esc(menu.id) + '" value="' +
             toInt(menu.perCase) + '" aria-label="1ケースの枚数"></td>';
           html += '<td><input class="num" inputmode="numeric" autocomplete="off" data-reserve-input="' + esc(menu.id) + '" value="' +
-            toInt(menu.reserve) + '" aria-label="予備在庫"></td>';
+            toInt(menu.reserve) + '" aria-label="多めに持つ枚数"></td>';
           html += '<td><button type="button" class="btn danger" data-delete-menu="' + esc(menu.id) + '">削除</button></td></tr>';
         });
         html += "</tbody></table></div>";
@@ -1106,7 +1106,7 @@
       function renderHolidays() {
         var list = document.getElementById("holiday-list");
         if (!state.holidays.length) {
-          list.innerHTML = '<li class="is-empty">登録された休みはありません</li>';
+          list.innerHTML = '<li class="is-empty">追加した休みはありません</li>';
           return;
         }
         list.innerHTML = state.holidays.map(function (day) {
@@ -1344,7 +1344,7 @@
       }
 
       function resetAll() {
-        ask("食数、在庫、入荷待ち、配達休みを消して、メニューと品番は登録済みの内容に戻します。よろしいですか？", "初期状態に戻す", "danger").then(function (ok) {
+        ask("入れた食数、今ある枚数、まだ届いていない分、休みの日を消します。メニューと品番は残ります。よろしいですか？", "初期状態に戻す", "danger").then(function (ok) {
           if (!ok) return;
           state = defaultState();
           saveNow();
@@ -1360,11 +1360,11 @@
         var groups = getGroups().filter(function (g) { return g.cases > 0; });
         var status = document.getElementById("order-status");
         if (!groups.length) {
-          if (status) status.textContent = "発注ケース数がすべて0です。入荷待ちには追加しません。";
+          if (status) status.textContent = "注文するケースはありません。記録するものはありません。";
           return;
         }
         var total = groups.reduce(function (sum, g) { return sum + g.cases; }, 0);
-        ask(groups.length + "種類（合計" + total + "ケース）を、入荷待ちとして記録します。よろしいですか？", "記録する", "primary").then(function (ok) {
+        ask("アスピットへの入力は済みですか？ " + groups.length + "種類（合計" + total + "ケース）を、まだ届いていない分として残します。", "記録する", "primary").then(function (ok) {
           if (!ok) return;
           groups.forEach(function (g) {
             var rec = ensureContainer(g.key);
@@ -1378,12 +1378,12 @@
           saveNow();
           renderStock();
           updateDerived();
-          if (status) status.textContent = "記録しました。入荷待ちを差し引いたので、発注ケース数は0に戻っています。";
+          if (status) status.textContent = "記録しました。まだ届いていない分に入ったので、ケース数は0に戻っています。";
         });
       }
 
       function removePending(key, id) {
-        ask("この入荷待ちを取り消しますか？", "取り消す", "danger").then(function (ok) {
+        ask("この「まだ届いていない」分を消しますか？", "消す", "danger").then(function (ok) {
           if (!ok) return;
           var rec = state.containers[key];
           if (!rec) return;
