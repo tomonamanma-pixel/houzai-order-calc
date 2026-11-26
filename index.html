@@ -235,6 +235,14 @@
     .warn { color: var(--danger); font-weight: 800; margin: 6px 0 0; }
     .order-card.hot .warn { color: inherit; }
     .formula { font-size: 0.92rem; }
+    .do-this {
+      margin: 12px 0;
+      padding: 14px;
+      border-radius: 14px;
+      background: var(--status-bg);
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
     .status {
       min-height: 1.4em;
       font-weight: 800;
@@ -391,8 +399,9 @@
         <section class="card card-order">
           <h2>4. アスピットに入れる数</h2>
           <p class="summary" id="order-summary"></p>
+          <p class="do-this">オレンジの数字を、アスピットの同じ品番に入力してください。0は入力しません。</p>
+          <p class="formula">来週使う枚数と、多めに持つ枚数から、今ある枚数と届く予定を引いた数です。1ケースに足りない端数は切り上げます。</p>
           <div class="order-list" id="order-list"></div>
-          <p class="formula">オレンジの数字を、アスピットの同じ品番に入力してください。0は入力しません。来週使う枚数と、多めに持つ枚数から、今ある枚数と届く予定を引いた数です。1ケースに足りない端数は切り上げます。</p>
           <button type="button" class="btn primary xl" id="confirm-order">入力したので記録する</button>
           <p class="hint">このボタンはアスピットへは送りません。先に数字をアスピットへ入れ、そのあと押してください。押すと、まだ届いていない分として残るので、次に二重で注文しません。</p>
           <p class="status" id="order-status" aria-live="polite"></p>
