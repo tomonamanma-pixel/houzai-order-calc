@@ -170,6 +170,10 @@
       border-color: var(--accent);
       color: var(--accent-text);
     }
+    .copy-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin: 0 0 12px; }
+    .copy-row .field { flex: 1 1 10rem; min-width: 0; }
+    .copy-row select { width: 100%; }
+    .copy-row .btn { flex: 1 1 16rem; }
     table.meals thead th { text-align: center; }
     table.meals thead .sticky { text-align: left; }
     .day-head { display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1.15; white-space: normal; }
@@ -482,6 +486,8 @@
       var DAYS = ["月", "火", "水", "木", "金", "土", "日"];
       var WEEK_COUNT = 4;
       var mealWeek = 0;
+      var copyFrom = 0;
+      var copyTo = 1;
       var WEEK = ["日", "月", "火", "水", "木", "金", "土"];
       var CAT_CLASS = { "お弁当": "cat-bento", "丼": "cat-don", "お重": "cat-ju" };
       var SAMPLE = [
@@ -1157,6 +1163,43 @@
         });
       }
 
+      function weekChoiceLabel(offset) {
+        var start = weekMonday(offset);
+        var end = addDays(start, 6);
+        return (offset + 1) + "週目 " + formatMonthDay(start) + "〜" + formatMonthDay(end);
+      }
+
+      function copyButtonLabel() {
+        return (copyFrom + 1) + "週目を" + (copyTo + 1) + "週目にコピー";
+      }
+
+      function copyWeekMeals() {
+        var msg = document.getElementById("copy-msg");
+        if (copyFrom === copyTo || copyFrom < 0 || copyTo < 0 || copyFrom >= WEEK_COUNT || copyTo >= WEEK_COUNT) {
+          if (msg) msg.textContent = "コピー先を、別の週にしてください。";
+          return;
+        }
+        var label = copyButtonLabel();
+        ask(label + "します。よろしいですか？", "コピーする", "primary").then(function (ok) {
+          if (!ok) return;
+          var fromMonday = weekMonday(copyFrom);
+          var toMonday = weekMonday(copyTo);
+          state.menus.forEach(function (menu) {
+            if (linkedBases(menu).length) return;
+            if (!menu.weeks) menu.weeks = {};
+            menu.weeks[toMonday] = weekRow(menu, fromMonday).slice();
+          });
+          mealWeek = copyTo;
+          saveNow();
+          renderMeals();
+          renderStock();
+          renderOrder();
+          updateDerived();
+          var done = document.getElementById("copy-msg");
+          if (done) done.textContent = label + "しました。";
+        });
+      }
+
       function renderMeals() {
         var root = document.getElementById("meals-root");
         if (!state.menus.length) {
@@ -1173,7 +1216,21 @@
             '<span class="week-name">' + (w + 1) + '週目</span>' +
             '<span class="week-range">' + esc(formatMonthDay(start)) + "〜" + esc(formatMonthDay(end)) + "</span></button>";
         }
-        html += '</div><div class="table-scroll"><table class="meals"><thead><tr>' +
+        html += '</div><div class="copy-row">';
+        html += '<label class="field" for="copy-from">コピー元<select id="copy-from">';
+        for (var from = 0; from < WEEK_COUNT; from++) {
+          html += '<option value="' + from + '"' + (from === copyFrom ? " selected" : "") + ">" + esc(weekChoiceLabel(from)) + "</option>";
+        }
+        html += '</select></label>';
+        html += '<label class="field" for="copy-to">コピー先<select id="copy-to">';
+        for (var to = 0; to < WEEK_COUNT; to++) {
+          html += '<option value="' + to + '"' + (to === copyTo ? " selected" : "") + ">" + esc(weekChoiceLabel(to)) + "</option>";
+        }
+        html += '</select></label>';
+        html += '<button type="button" class="btn primary" id="copy-week"' + (copyFrom === copyTo ? " disabled" : "") + ">" +
+          esc(copyButtonLabel()) + "</button>";
+        html += '</div><p class="status" id="copy-msg" aria-live="polite"></p>';
+        html += '<div class="table-scroll"><table class="meals"><thead><tr>' +
           '<th class="sticky">メニュー</th>';
         DAYS.forEach(function (day, index) {
           var iso = addDays(monday, index);
@@ -1466,6 +1523,18 @@
       function onChange(e) {
         var t = e.target;
         if (t.id === "order-date") { setOrderDate(t.value, t); return; }
+        if (t.id === "copy-from" || t.id === "copy-to") {
+          copyFrom = Number(document.getElementById("copy-from").value);
+          copyTo = Number(document.getElementById("copy-to").value);
+          var button = document.getElementById("copy-week");
+          if (button) {
+            button.textContent = copyButtonLabel();
+            button.disabled = copyFrom === copyTo;
+          }
+          var msg = document.getElementById("copy-msg");
+          if (msg) msg.textContent = copyFrom === copyTo ? "コピー先を、別の週にしてください。" : "";
+          return;
+        }
         if (t.hasAttribute("data-count-for") || t.hasAttribute("data-stock-for") || t.hasAttribute("data-per-input") || t.hasAttribute("data-reserve-input")) {
           blurNumber(t);
         }
@@ -1637,6 +1706,7 @@
           renderMeals();
           updateDerived();
         }
+        else if (t.id === "copy-week") copyWeekMeals();
         else if (t.id === "tab-master") showTab("master");
         else if (t.id === "add-menu") addMenu();
         else if (t.id === "reset-all") resetAll();
