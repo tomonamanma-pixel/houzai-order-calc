@@ -151,7 +151,29 @@
     }
     .table-scroll { overflow-x: auto; overflow-y: clip; -webkit-overflow-scrolling: touch; }
     table { border-collapse: separate; border-spacing: 0; width: 100%; }
-    table.meals { min-width: 680px; }
+    table.meals { min-width: 760px; }
+    .week-picks { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+    .week-btn {
+      flex: 1 1 7.4rem;
+      min-height: 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      line-height: 1.15;
+      padding: 6px 8px;
+    }
+    .week-btn .week-range { font-size: 0.82rem; font-weight: 800; }
+    .week-btn[aria-pressed="true"] {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-text);
+    }
+    table.meals thead th { text-align: center; }
+    table.meals thead .sticky { text-align: left; }
+    .day-head { display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1.15; white-space: normal; }
+    .day-date { color: var(--text); font-size: 0.85rem; font-weight: 800; }
     table.stock { min-width: 860px; }
     table.master { min-width: 920px; }
     .lid-note { color: var(--muted); font-weight: 700; text-align: left; white-space: nowrap; }
@@ -390,9 +412,9 @@
         </section>
 
         <section class="card card-meals">
-          <h2>2. 来週の食数</h2>
-          <p class="hint">月〜土に作る食数を入れてください。1食で容器が1枚要ります。右は6日分の合計です。発注数は、この合計そのものではありません。次に届く前日までの分だけです。蓋と中皿は入れません。本体と同じ食数になります。</p>
-          <p class="scroll-hint">火〜土は、表を横にスライドすると見えます。</p>
+          <h2>2. 週の食数</h2>
+          <p class="hint">週のボタンを押すと、その週の月〜日が出ます。曜日の上は日付です。食数を変えると、その週だけ変わります。まだ変えていない週は、同じ食数です。右はその週の合計です。この注文で使うのは、届く日から、次に届く前日までです。蓋と中皿は入れません。本体と同じ食数になります。</p>
+          <p class="scroll-hint">火〜日は、表を横にスライドすると見えます。</p>
           <div id="meals-root"></div>
         </section>
 
@@ -457,7 +479,9 @@
     (function () {
       var STORAGE_KEY = "houzai-order-calc-v1";
       var CATEGORIES = ["お弁当", "丼", "お重"];
-      var DAYS = ["月", "火", "水", "木", "金", "土"];
+      var DAYS = ["月", "火", "水", "木", "金", "土", "日"];
+      var WEEK_COUNT = 4;
+      var mealWeek = 0;
       var WEEK = ["日", "月", "火", "水", "木", "金", "土"];
       var CAT_CLASS = { "お弁当": "cat-bento", "丼": "cat-don", "お重": "cat-ju" };
       var SAMPLE = [
@@ -632,7 +656,7 @@
           code: code || "",
           perCase: perCase == null ? 50 : toInt(perCase),
           reserve: reserve == null ? 0 : toInt(reserve),
-          counts: [0, 0, 0, 0, 0, 0]
+          counts: [0, 0, 0, 0, 0, 0, 0]
         };
       }
 
@@ -667,6 +691,12 @@
           var id = menu && typeof menu.id === "string" && menu.id ? menu.id : uid("m");
           if (seen[id]) id = uid("m");
           seen[id] = true;
+          var weeks = {};
+          var rawWeeks = menu && menu.weeks && typeof menu.weeks === "object" ? menu.weeks : {};
+          Object.keys(rawWeeks).forEach(function (key) {
+            if (!isISO(key) || !Array.isArray(rawWeeks[key])) return;
+            weeks[key] = [0, 1, 2, 3, 4, 5, 6].map(function (i) { return toInt(rawWeeks[key][i]); });
+          });
           return {
             id: id,
             name: menu && typeof menu.name === "string" ? menu.name : "",
@@ -674,7 +704,8 @@
             code: menu && typeof menu.code === "string" ? menu.code : "",
             perCase: !menu || menu.perCase == null || menu.perCase === "" ? 50 : toInt(menu.perCase),
             reserve: !menu || menu.reserve == null || menu.reserve === "" ? 0 : toInt(menu.reserve),
-            counts: [0, 1, 2, 3, 4, 5].map(function (i) { return toInt(counts[i]); })
+            counts: [0, 1, 2, 3, 4, 5, 6].map(function (i) { return toInt(counts[i]); }),
+            weeks: weeks
           };
         });
         var containers = {};
@@ -834,18 +865,56 @@
         return uses;
       }
 
-      function dayUseIndex(iso) {
-        var d = parseISO(iso).getDay();
-        if (d === 0) return -1;
-        return d - 1;
+      function mondayOf(iso) {
+        if (!isISO(iso)) return "";
+        var day = parseISO(iso).getDay();
+        return addDays(iso, day === 0 ? -6 : 1 - day);
+      }
+
+      function weekMonday(offset) {
+        var start = isISO(state.orderDate) ? state.orderDate : todayISO();
+        return addDays(mondayOf(start), offset * 7);
+      }
+
+      function formatMonthDay(iso) {
+        var d = parseISO(iso);
+        return (d.getMonth() + 1) + "/" + d.getDate();
+      }
+
+      function weekRow(menu, monday) {
+        var row = menu.weeks && menu.weeks[monday];
+        if (row) return row;
+        var base = menu.counts || [];
+        return [0, 1, 2, 3, 4, 5, 6].map(function (i) { return toInt(base[i]); });
+      }
+
+      function countsOn(menu, iso) {
+        if (!isISO(iso)) return 0;
+        var idx = parseISO(iso).getDay();
+        idx = idx === 0 ? 6 : idx - 1;
+        return toInt(weekRow(menu, mondayOf(iso))[idx]);
+      }
+
+      function setWeekCount(menu, monday, index, value) {
+        if (!menu.weeks) menu.weeks = {};
+        if (!menu.weeks[monday]) menu.weeks[monday] = weekRow(menu, monday).slice();
+        menu.weeks[monday][index] = value;
+      }
+
+      function weekUsage(menu, monday) {
+        var bases = linkedBases(menu);
+        if (!bases.length) {
+          return weekRow(menu, monday).reduce(function (sum, n) { return sum + toInt(n); }, 0);
+        }
+        return bases.reduce(function (sum, item) {
+          return sum + weekRow(item, monday).reduce(function (inner, n) { return inner + toInt(n); }, 0);
+        }, 0);
       }
 
       function menuDayUse(menu, iso) {
-        var idx = dayUseIndex(iso);
-        if (idx < 0) return 0;
         var bases = linkedBases(menu);
-        if (!bases.length) return toInt(menu.counts[idx]);
-        return bases.reduce(function (sum, base) { return sum + toInt(base.counts[idx]); }, 0);
+        if (!bases.length) return countsOn(menu, iso);
+        return bases.reduce(function (sum, base) { return sum + countsOn(base, iso); }, 0);
       }
 
       function groupDayUse(menus, key, iso) {
@@ -1008,7 +1077,7 @@
 
         state.menus.forEach(function (menu) {
           document.querySelectorAll("[data-sum]").forEach(function (el) {
-            if (el.getAttribute("data-sum") === menu.id) el.textContent = String(menuUsage(menu));
+            if (el.getAttribute("data-sum") === menu.id) el.textContent = String(weekUsage(menu, weekMonday(mealWeek)));
           });
           document.querySelectorAll("[data-menu-label]").forEach(function (el) {
             if (el.getAttribute("data-menu-label") === menu.id) {
@@ -1017,8 +1086,11 @@
           });
           document.querySelectorAll("[data-count-for]").forEach(function (el) {
             if (el.getAttribute("data-count-for") !== menu.id) return;
-            var day = DAYS[Number(el.getAttribute("data-day"))];
-            el.setAttribute("aria-label", ((menu.name || "").trim() || "メニュー") + "の" + day + "の食数");
+            var monday = el.getAttribute("data-monday");
+            var index = Number(el.getAttribute("data-day"));
+            var iso = monday ? addDays(monday, index) : "";
+            var when = iso ? formatMD(iso) : DAYS[index];
+            el.setAttribute("aria-label", ((menu.name || "").trim() || "メニュー") + "の" + when + "の食数");
           });
         });
 
@@ -1091,29 +1163,45 @@
           root.innerHTML = '<p class="empty-note">メニューがありません。「メニュー・容器」から追加してください。</p>';
           return;
         }
-        var html = '<div class="table-scroll"><table class="meals"><thead><tr>' +
+        if (mealWeek < 0 || mealWeek >= WEEK_COUNT) mealWeek = 0;
+        var monday = weekMonday(mealWeek);
+        var html = '<div class="week-picks" role="group" aria-label="週">';
+        for (var w = 0; w < WEEK_COUNT; w++) {
+          var start = weekMonday(w);
+          var end = addDays(start, 6);
+          html += '<button type="button" class="btn week-btn" data-week="' + w + '" aria-pressed="' + (w === mealWeek ? "true" : "false") + '">' +
+            '<span class="week-name">' + (w + 1) + '週目</span>' +
+            '<span class="week-range">' + esc(formatMonthDay(start)) + "〜" + esc(formatMonthDay(end)) + "</span></button>";
+        }
+        html += '</div><div class="table-scroll"><table class="meals"><thead><tr>' +
           '<th class="sticky">メニュー</th>';
-        DAYS.forEach(function (day) { html += "<th>" + day + "</th>"; });
+        DAYS.forEach(function (day, index) {
+          var iso = addDays(monday, index);
+          html += '<th><span class="day-head"><span class="day-date">' + esc(formatMonthDay(iso)) +
+            '</span><span class="day-name">' + day + "</span></span></th>";
+        });
         html += '<th class="sticky-end">合計</th></tr></thead><tbody>';
         var last = "";
         menusInOrder().forEach(function (menu) {
           if (menu.category !== last) {
             last = menu.category;
-            html += '<tr class="cat-row ' + CAT_CLASS[menu.category] + '"><th colspan="8">' + esc(menu.category) + "</th></tr>";
+            html += '<tr class="cat-row ' + CAT_CLASS[menu.category] + '"><th colspan="9">' + esc(menu.category) + "</th></tr>";
           }
           html += "<tr><th class=\"sticky name-cell\" scope=\"row\" data-menu-label=\"" + esc(menu.id) + "\">" +
             esc(menuLabel(menu)) + "</th>";
           var bases = linkedBases(menu);
+          var row = weekRow(menu, monday);
           if (bases.length) {
-            html += '<td class="lid-note" colspan="6">' + esc(linkedNote(menu)) + "</td>";
+            html += '<td class="lid-note" colspan="7">' + esc(linkedNote(menu)) + "</td>";
           } else {
-            menu.counts.forEach(function (count, index) {
+            row.forEach(function (count, index) {
+              var iso = addDays(monday, index);
               html += '<td><input class="num" inputmode="numeric" autocomplete="off" data-count-for="' + esc(menu.id) +
-                '" data-day="' + index + '" value="' + toInt(count) + '" aria-label="' +
-                esc((trimName(menu.name) || "メニュー") + "の" + DAYS[index] + "の食数") + '"></td>';
+                '" data-monday="' + esc(monday) + '" data-day="' + index + '" value="' + toInt(count) + '" aria-label="' +
+                esc((trimName(menu.name) || "メニュー") + "の" + formatMD(iso) + "の食数") + '"></td>';
             });
           }
-          html += '<td class="total-cell sticky-end" data-sum="' + esc(menu.id) + '">' + menuUsage(menu) + "</td></tr>";
+          html += '<td class="total-cell sticky-end" data-sum="' + esc(menu.id) + '">' + weekUsage(menu, monday) + "</td></tr>";
         });
         html += "</tbody></table></div>";
         root.innerHTML = html;
@@ -1315,6 +1403,7 @@
         state.orderDate = value;
         var pruned = prunePending();
         save();
+        renderMeals();
         if (pruned) renderStock();
         updateDerived();
       }
@@ -1331,7 +1420,9 @@
         if (countId) {
           var menu = findMenu(countId);
           if (!menu) return;
-          menu.counts[Number(t.getAttribute("data-day"))] = toInt(t.value);
+          var monday = t.getAttribute("data-monday");
+          if (!monday) return;
+          setWeekCount(menu, monday, Number(t.getAttribute("data-day")), toInt(t.value));
           save();
           updateDerived();
           return;
@@ -1539,6 +1630,13 @@
         var t = e.target.closest("button");
         if (!t) return;
         if (t.id === "tab-calc") showTab("calc");
+        else if (t.hasAttribute("data-week")) {
+          var picked = Number(t.getAttribute("data-week"));
+          if (picked === mealWeek || picked < 0 || picked >= WEEK_COUNT) return;
+          mealWeek = picked;
+          renderMeals();
+          updateDerived();
+        }
         else if (t.id === "tab-master") showTab("master");
         else if (t.id === "add-menu") addMenu();
         else if (t.id === "reset-all") resetAll();
